@@ -1,20 +1,30 @@
+import os
 from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
-import os
-from dotenv import load_dotenv
+from dotenv import load_dotenv # type: ignore
 
-# 1. Load variables from your .env file
+# 1. TELL PYTHON TO READ THE .ENV FILE
+# This looks for the .env file in the same folder and loads its variables
 load_dotenv()
 
-# 2. Get the URL
-SQLALCHEMY_DATABASE_URL = os.getenv("DATABASE_URL")
+# 2. EXTRACT THE VARIABLE
+# We use os.getenv to grab the specific string we named in the .env file
+DATABASE_URL = os.getenv("DATABASE_URL")
 
-# 3. Create the Engine
-engine = create_engine(SQLALCHEMY_DATABASE_URL)
+# 3. USE THE VARIABLE TO START THE ENGINE
+if not DATABASE_URL:
+    raise ValueError("No DATABASE_URL found in environment variables!")
 
-# 4. Create Session factory
+engine = create_engine(DATABASE_URL)
+
+# Standard SQLAlchemy Setup
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
-
-# 5. Create the Base class (Required for main.py)
 Base = declarative_base()
+
+def get_db():
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
