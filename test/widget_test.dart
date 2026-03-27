@@ -5,7 +5,7 @@ import 'package:careerai_project/main.dart';
 void main() {
   testWidgets('Language selection smoke test', (WidgetTester tester) async {
     // 1. Load the CareerApp
-    await tester.pumpWidget(const CareerApp());
+    await tester.pumpWidget(const CareerAI());
 
     // 2. Look for your new Heading
     expect(find.text('Select Your Preferred Language'), findsOneWidget);
