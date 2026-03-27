@@ -1,22 +1,25 @@
 name: careerai_project
-description: "A professional Career AI App."
+description: "A new Flutter project."
 publish_to: 'none'
 version: 1.0.0+1
 
 environment:
-  sdk: '>=3.2.0 <4.0.0'
+  sdk: '>=3.2.3 <4.0.0'
 
+# 'dependencies' must be at the very edge (no spaces)
 dependencies:
   flutter:
     sdk: flutter
-  cupertino_icons: ^1.0.8
-  google_fonts: ^6.2.1 # For professional typography
-  http: ^1.6.0
+  
+  # 'http' must have exactly 2 spaces (aligned with 'flutter' above)
+  http: ^1.2.0
+  cupertino_icons: ^1.0.6
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^3.0.0
 
+# 'flutter' section for assets/fonts (no spaces)
 flutter:
   uses-material-design: true

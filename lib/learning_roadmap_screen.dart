@@ -47,3 +47,5 @@ class RoadmapScreen extends StatelessWidget {
     );
   }
 }
+
+class ApiService {}
