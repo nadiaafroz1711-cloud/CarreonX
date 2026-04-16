@@ -1,48 +1,98 @@
-from fastapi import APIRouter, Depends, HTTPException
+import hashlib
+from fastapi import APIRouter, HTTPException, status, Depends
 from sqlalchemy.orm import Session
-from database.database import SessionLocal
-from models.user import User, Profile  # Import both models
-from schemas.user_schema import UserCreate, UserResponse
-from schemas.profile_schema import ProfileResponse
+from backend.database.connection import get_db
+from backend.models.user import User
+from backend.schemas.user_schemas import UserCreate, UserLogin, UserResponse
 
-router = APIRouter()
+router = APIRouter(
+    prefix="/auth",
+    tags=["Authentication"]
+)
 
-# Dependency to get the database session
-def get_db():
-    db = SessionLocal()
+from passlib.context import CryptContext
+import jwt
+import os
+from datetime import datetime, timedelta
+
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+SECRET_KEY = os.getenv("SECRET_KEY", "your_secret_123")
+ALGORITHM = "HS256"
+
+def hash_password(password: str):
+    return pwd_context.hash(password)
+
+def verify_password(plain_password, hashed_password):
     try:
-        yield db
-    finally:
-        db.close()
+        # Check standard bcrypt
+        return pwd_context.verify(plain_password, hashed_password)
+    except Exception:
+        # Fallback for existing SHA256 test users
+        import hashlib
+        return hashlib.sha256(plain_password.encode()).hexdigest() == hashed_password
 
-# 1. POST: Register a new User
-@router.post("/register", response_model=UserResponse)
-def register_user(user: UserCreate, db: Session = Depends(get_db)):
-    # Check if email already exists
-    db_user = db.query(User).filter(User.email == user.email).first()
-    if db_user:
-        raise HTTPException(status_code=400, detail="Email already registered")
+def create_access_token(user_id: int):
+    expire = datetime.utcnow() + timedelta(days=7)
+    return jwt.encode({"sub": str(user_id), "exp": expire}, SECRET_KEY, algorithm=ALGORITHM)
+
+
+@router.post("/register")
+
+async def register(user_data: UserCreate, db: Session = Depends(get_db)):
+    # 1. Check if user already exists
+    existing_user = db.query(User).filter(
+        (User.email == user_data.email) | (User.username == user_data.username)
+    ).first()
+    if existing_user:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="User with this email or username already exists"
+        )
     
-    # Create new user
+    # 2. Hash password and create user
+    hashed_pwd = hash_password(user_data.password)
     new_user = User(
-        name=user.name, 
-        email=user.email, 
-        hashed_password=user.password  # In a real app, hash this!
+        username=user_data.username,
+        email=user_data.email,
+        hashed_password=hashed_pwd
     )
+    
     db.add(new_user)
     db.commit()
     db.refresh(new_user)
-    return new_user
+    
+    return {
+        "message": "Registration successful",
+        "user": {
+            "id": new_user.id,
+            "username": new_user.username,
+            "email": new_user.email
+        },
+        "token": create_access_token(new_user.id)
+    }
 
-# 2. GET: List all Users (This is the blue bar you saw)
-@router.get("/users", response_model=list[UserResponse])
-def get_users(db: Session = Depends(get_db)):
-    return db.query(User).all()
 
-# 3. GET: Fetch a specific User's Profile
-@router.get("/profile/{user_id}", response_model=ProfileResponse)
-def get_user_profile(user_id: int, db: Session = Depends(get_db)):
-    profile = db.query(Profile).filter(Profile.user_id == user_id).first()
-    if not profile:
-        raise HTTPException(status_code=404, detail="Profile not found")
-    return profile
+@router.post("/login")
+async def login(credentials: UserLogin, db: Session = Depends(get_db)):
+    user = db.query(User).filter(User.email == credentials.email).first()
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid email or password"
+        )
+    
+    if not verify_password(credentials.password, user.hashed_password):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid email or password"
+        )
+    
+    return {
+        "message": "Login successful",
+        "user": {
+            "id": user.id,
+            "username": user.username,
+            "email": user.email
+        },
+        "token": create_access_token(user.id)
+    }

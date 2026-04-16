@@ -1,0 +1,55 @@
+# 🚀 CarreonX - Quick Setup Guide
+
+This guide describes how to run the CarreonX platform on your local machine.
+
+---
+
+## 1. Prerequisites
+- Python 3.10+
+- Node.js 18+
+- npm (Node Package Manager)
+
+---
+
+## 2. Backend (FastAPI API)
+1. Open a terminal in `CarreonX/backend/`.
+2. Create and activate a Virtual Environment:
+   ```bash
+   python -m venv venv
+   source venv/bin/activate  # Windows: venv\\Scripts\\activate
+   ```
+3. Install dependencies:
+   ```bash
+   pip install -r requirements.txt
+   ```
+4. Create a `.env` file and add your `GEMINI_API_KEY`:
+   ```bash
+   GEMINI_API_KEY=your_key_here
+   ```
+5. Run the Server:
+   ```bash
+   uvicorn main:app --reload
+   ```
+
+---
+
+## 3. Frontend (Next.js & Glassmorphism UI)
+1. Open a second terminal in `CarreonX/CarreonX-web/`.
+2. Install dependencies:
+   ```bash
+   npm install
+   ```
+3. Run the Development Server:
+   ```bash
+   npm run dev
+   ```
+4. Open your browser and navigate to:
+   **http://localhost:3000**
+
+---
+
+## 📂 Submission Files Included:
+- **project_report.md**: 12 sections for your final report.
+- **presentation_outline.md**: Slide-by-slide structure for your PPT.
+- **viva_prep.md**: 30+ potential questions/answers.
+- **screenshots/**: All key screens verified and ready for your presentation.

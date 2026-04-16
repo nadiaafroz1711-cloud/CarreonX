@@ -1,13 +1,18 @@
 from pydantic import BaseModel
-from typing import Optional
-from pydantic import BaseModel
+from typing import List, Optional
 
-class ProfileCreate(BaseModel):
-    skills: str
-    target_role: str
-    experience_level: str
+class ProfileBase(BaseModel):
+    domain: str
+    skills: List[str]
 
-class ProfileResponse(ProfileCreate):
+class ProfileCreate(ProfileBase):
+    user_id: int
+
+class ProfileUpdate(BaseModel):
+    domain: Optional[str] = None
+    skills: Optional[List[str]] = None
+
+class ProfileResponse(ProfileBase):
     id: int
     user_id: int
 

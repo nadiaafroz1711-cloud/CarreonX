@@ -1,0 +1,6 @@
+fastapi
+uvicorn
+google-generativeai
+sqlalchemy
+email-validator
+python-dotenv

@@ -32,6 +32,7 @@ class ExamScreen extends StatelessWidget {
             value: o,
             groupValue: "",
             title: Text(o, style: const TextStyle(fontSize: 14)),
+            // ignore: deprecated_member_use
             onChanged: (v) {})),
         const Divider(),
       ],

@@ -1,0 +1,20 @@
+﻿career,domain,skills
+Data Scientist,AI,Python|Statistics|Machine Learning|SQL
+Machine Learning Engineer,AI,Python|ML|Deep Learning|TensorFlow
+Web Developer,Software,HTML|CSS|JavaScript|React
+Backend Developer,Software,Python|Django|Databases|API
+UI/UX Designer,Design,Figma|UI|UX|Design Principles
+Cyber Security Analyst,Security,Networking|Security|Linux|Python
+Cloud Engineer,Cloud,AWS|Docker|Kubernetes|Linux
+Mobile App Developer,Software,Flutter|Dart|Firebase
+career,domain,skills
+Data Scientist,AI,Python|Statistics|Machine Learning|SQL
+Machine Learning Engineer,AI,Python|ML|Deep Learning|TensorFlow
+Web Developer,Software,HTML|CSS|JavaScript|React
+Backend Developer,Software,Python|Django|Databases|API
+UI/UX Designer,Design,Figma|UI|UX|Design Principles
+Cyber Security Analyst,Security,Networking|Security|Linux|Python
+Cloud Engineer,Cloud,AWS|Docker|Kubernetes|Linux
+Mobile App Developer,Software,Flutter|Dart|Firebase
+# Change 'career_name' to whatever is actually in your CSV header
+recommendations = roadmap_df[roadmap_df['YOUR_COLUMN_NAME'].str.contains(career...)]

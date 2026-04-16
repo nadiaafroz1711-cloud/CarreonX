@@ -1,18 +1,21 @@
-from BACKEND.models.models import User
-from BACKEND.database.db import SessionLocal
+# Import from the folder 'models' and file 'user'
+from backend.models.user import User
 
-def create_user(name, email, password):
+# Import from the database connection module
+from backend.database.connection import SessionLocal
+
+def create_user(username, email, hashed_password):
     db = SessionLocal()
-
+    
     user = User(
-        name=name,
+        username=username,
         email=email,
-        password=password
+        hashed_password=hashed_password
     )
-
+    
     db.add(user)
-    db.commit()
+    db.commit()   # <--- CRITICAL: You must commit to save to the database
     db.refresh(user)
     db.close()
-
-    return user
+    
+    return user

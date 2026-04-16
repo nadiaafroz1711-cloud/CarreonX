@@ -4,6 +4,7 @@ import 'package:careerai_project/login_screen.dart';
 import 'package:careerai_project/profile_screen.dart';
 import 'package:careerai_project/signup_screen.dart';
 import 'package:careerai_project/splash_screen.dart';
+import 'package:careerai_project/language_screen.dart';
 import 'package:flutter/material.dart';
 // Import your screens from the 'screens' folder
 import 'package:careerai_project/screens/login_screen.dart';
@@ -38,6 +39,7 @@ class CareerAI extends StatelessWidget {
         '/dashboard': (context) => const DashboardScreen(),
         '/roadmap': (context) => const RoadmapScreen(),
         '/profile': (context) => const ProfileScreen(),
+        '/language': (context) => const LanguageScreen(),
       },
     );
   }

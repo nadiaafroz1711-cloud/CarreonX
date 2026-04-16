@@ -1,28 +1,50 @@
 import os
+from dotenv import load_dotenv
 from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
-from dotenv import load_dotenv # type: ignore
 
-# 1. Load the .env file
-load_dotenv()
+load_dotenv(os.path.join(os.path.dirname(os.path.dirname(__file__)), ".env"))
 
-# 2. Get the URL from environment variables
-DATABASE_URL = os.getenv("DATABASE_URL")
+# 1. READ DB URL FROM ENV (FOR PRODUCTION)
+# Render/Heroku provide "postgres://", but SQLAlchemy 1.4+ needs "postgresql://"
+from pathlib import Path
+def find_project_root():
+    current = Path(__file__).resolve()
+    # Search upwards for the CarreonX_PROJECT directory
+    for parent in [current] + list(current.parents):
+        if parent.name == "CarreonX_PROJECT":
+            return parent
+    # Fallback if not found in parent tree
+    return current.parent.parent.parent
 
-# 3. Create the Engine
-# Note: If using SQLite, add: connect_args={"check_same_thread": False}
-engine = create_engine(DATABASE_URL)
+PROJECT_ROOT = find_project_root()
+db_path = PROJECT_ROOT / "sql_app.db"
+raw_db_url = os.getenv("DATABASE_URL", f"sqlite:///{db_path.as_posix()}")
 
-# 4. Create a Session factory
-# This is what you'll use to create a new database session for each request
+if raw_db_url.startswith("postgres://"):
+    raw_db_url = raw_db_url.replace("postgres://", "postgresql://", 1)
+
+SQLALCHEMY_DATABASE_URL = raw_db_url
+
+# 2. CREATE ENGINE
+# For SQLite, we need connect_args; for Postgres, we don't.
+if "sqlite" in SQLALCHEMY_DATABASE_URL:
+    engine = create_engine(SQLALCHEMY_DATABASE_URL, connect_args={"check_same_thread": False})
+else:
+    engine = create_engine(SQLALCHEMY_DATABASE_URL)
+
+
+
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
-# 5. Create the Base class
-# Your models (User, Roadmap, etc.) must inherit from this
+# This is the ONLY Base that should exist in your project
 Base = declarative_base()
 
-# 6. Dependency to get a DB session (used in your routes)
+# --- MODELS ---
+
+
+# 3. DB Dependency
 def get_db():
     db = SessionLocal()
     try:
