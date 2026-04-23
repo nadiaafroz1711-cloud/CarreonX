@@ -4,40 +4,50 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { API_BASE_URL } from "@/lib/config";
 
 const DOMAINS = [
-  { label: "Web Development",      icon: "🌐" },
-  { label: "Data Science & AI",    icon: "🤖" },
-  { label: "Cyber Security",       icon: "🔐" },
-  { label: "Cloud Computing",      icon: "☁️" },
-  { label: "Product Management",   icon: "📋" },
-  { label: "UI/UX Design",         icon: "🎨" },
-  { label: "Mobile Development",   icon: "📱" },
-  { label: "DevOps Engineering",   icon: "⚙️" },
+  { label: "Web Development", icon: "🌐" },
+  { label: "Data Science & AI", icon: "🤖" },
+  { label: "Cyber Security", icon: "🔐" },
+  { label: "Cloud Computing", icon: "☁️" },
+  { label: "Product Management", icon: "📋" },
+  { label: "UI/UX Design", icon: "🎨" },
+  { label: "Mobile Development", icon: "📱" },
+  { label: "DevOps Engineering", icon: "⚙️" },
 ];
 
 const POPULAR_SKILLS: Record<string, string[]> = {
-  "Web Development":    ["React", "Node.js", "TypeScript", "CSS", "Next.js"],
-  "Data Science & AI":  ["Python", "TensorFlow", "SQL", "Pandas", "Machine Learning"],
-  "Cyber Security":     ["Networking", "Linux", "Python", "Ethical Hacking", "SIEM"],
-  "Cloud Computing":    ["AWS", "Docker", "Kubernetes", "Terraform", "Linux"],
+  "Web Development": ["React", "Node.js", "TypeScript", "CSS", "Next.js"],
+  "Data Science & AI": ["Python", "TensorFlow", "SQL", "Pandas", "Machine Learning"],
+  "Cyber Security": ["Networking", "Linux", "Python", "Ethical Hacking", "SIEM"],
+  "Cloud Computing": ["AWS", "Docker", "Kubernetes", "Terraform", "Linux"],
   "Product Management": ["Agile", "Figma", "JIRA", "User Research", "OKRs"],
-  "UI/UX Design":       ["Figma", "User Research", "Prototyping", "Wireframing", "CSS"],
+  "UI/UX Design": ["Figma", "User Research", "Prototyping", "Wireframing", "CSS"],
   "Mobile Development": ["React Native", "Flutter", "Swift", "Kotlin", "Firebase"],
   "DevOps Engineering": ["Docker", "Kubernetes", "CI/CD", "AWS", "Linux"],
 };
 
-type Step = 1 | 2 | 3;
+type Step = 1 | 2 | 3 | 4;
 
 function OnboardingContent() {
-  const router       = useRouter();
+  const router = useRouter();
   const searchParams = useSearchParams();
-  const userId       = searchParams.get("userId");
 
-  const [step, setStep]         = useState<Step>(1);
-  const [domain, setDomain]     = useState("");
-  const [skills, setSkills]     = useState<string[]>([]);
+
+  const [step, setStep] = useState<Step>(1);
+  const [domain, setDomain] = useState("");
+  const [skills, setSkills] = useState<string[]>([]);
   const [customSkill, setCustomSkill] = useState("");
-  const [loading, setLoading]   = useState(false);
-  const [error, setError]       = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    if (step === 4) {
+      const timer = setTimeout(() => {
+        const currentUserId = searchParams.get("userId") || localStorage.getItem("userId") || (localStorage.getItem("user") ? JSON.parse(localStorage.getItem("user") as string).id : "");
+        router.push(`/roadmap?career=${encodeURIComponent(domain)}&skills=${encodeURIComponent(skills.join(","))}&userId=${currentUserId}`);
+      }, 3500);
+      return () => clearTimeout(timer);
+    }
+  }, [step, domain, skills, router, searchParams]);
 
   const suggestedSkills = domain ? (POPULAR_SKILLS[domain] || []) : [];
 
@@ -54,8 +64,9 @@ function OnboardingContent() {
   };
 
   const handleFinish = async () => {
-    if (!userId) { setError("Session lost. Please sign up again."); return; }
-    if (!domain)  { setError("Please select a career domain."); return; }
+    const currentUserId = searchParams.get("userId") || localStorage.getItem("userId") || (localStorage.getItem("user") ? JSON.parse(localStorage.getItem("user") as string).id : null);
+    if (!currentUserId) { setError("Session lost. Please sign up again."); return false; }
+    if (!domain) { setError("Please select a career domain."); return false; }
 
     setLoading(true);
     setError("");
@@ -64,7 +75,7 @@ function OnboardingContent() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          user_id: parseInt(userId),
+          user_id: parseInt(currentUserId),
           domain,
           skills,
         }),
@@ -73,10 +84,11 @@ function OnboardingContent() {
         const data = await res.json();
         throw new Error(data.detail || "Could not save profile.");
       }
-      router.push("/");
+      return true;
 
     } catch (err: any) {
       setError(err.message);
+      return false;
     } finally {
       setLoading(false);
     }
@@ -101,7 +113,7 @@ function OnboardingContent() {
 
         {/* ── Step Indicator ── */}
         <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "0", marginBottom: "2.5rem" }}>
-          {([1, 2, 3] as Step[]).map((s, i) => (
+          {([1, 2, 3, 4] as number[]).map((s, i) => (
             <div key={s} style={{ display: "flex", alignItems: "center" }}>
               <div style={{
                 width: "32px", height: "32px", borderRadius: "50%",
@@ -115,9 +127,9 @@ function OnboardingContent() {
               }}>
                 {step > s ? "✓" : s}
               </div>
-              {i < 2 && (
+              {i < 3 && (
                 <div style={{
-                  width: "60px", height: "2px",
+                  width: "45px", height: "2px",
                   background: step > s ? "linear-gradient(90deg, var(--primary), var(--secondary))" : "rgba(255,255,255,0.08)",
                   transition: "var(--transition)",
                 }} />
@@ -132,18 +144,17 @@ function OnboardingContent() {
             <div style={{ textAlign: "center", marginBottom: "2.5rem" }}>
               <div style={{ fontSize: "3rem", marginBottom: "1rem" }}>👋</div>
               <h1 style={{ fontSize: "2rem", fontWeight: 800, color: "white", marginBottom: "0.75rem", fontFamily: "var(--font-sans)" }}>
-                Welcome to CarreonX!
+                Start Your Journey
               </h1>
               <p style={{ color: "var(--muted)", lineHeight: 1.7, fontSize: "0.95rem" }}>
-                Let's personalise your experience so the AI can build the perfect roadmap for you.
-                This takes less than a minute.
+                Welcome to CarreonX. We are about to build your professional learning path from scratch.
               </p>
             </div>
             <div style={{ display: "grid", gap: "0.85rem", marginBottom: "2rem" }}>
               {[
-                { icon: "🗺️", title: "Personalised Roadmap", desc: "Step-by-step plan for your chosen career" },
-                { icon: "🤖", title: "AI Mentor Tuned to You", desc: "Chatbot trained on your skills and goals" },
-                { icon: "🧪", title: "Relevant Mock Tests",    desc: "Quizzes targeted at your career path" },
+                { icon: "🏫", title: "Chapter-Wise Learning", desc: "Phase-based content with 3 milestones each" },
+                { icon: "💻", title: "Live Code Sandbox", desc: "Practice coding directly in your workspace" },
+                { icon: "🧪", title: "Phase-Based Mock Tests", desc: "Quizzes designed around your completed chapters" },
               ].map((f) => (
                 <div key={f.title} className="glass-card" style={{ padding: "1rem 1.25rem", display: "flex", gap: "1rem", alignItems: "flex-start" }}>
                   <span style={{ fontSize: "1.5rem", flexShrink: 0 }}>{f.icon}</span>
@@ -155,7 +166,7 @@ function OnboardingContent() {
               ))}
             </div>
             <button onClick={() => setStep(2)} className="btn-primary" style={{ width: "100%", padding: "1rem" }}>
-              Let's Get Started →
+              Continue Step 1 →
             </button>
           </div>
         )}
@@ -165,10 +176,10 @@ function OnboardingContent() {
           <div className="fade-in">
             <div style={{ marginBottom: "2rem" }}>
               <h2 style={{ fontSize: "1.6rem", fontWeight: 800, color: "white", marginBottom: "0.5rem", fontFamily: "var(--font-sans)" }}>
-                Choose Your Career Domain
+                Step 2: Identify Your Path
               </h2>
               <p style={{ color: "var(--muted)", fontSize: "0.9rem" }}>
-                Which field are you targeting? This shapes your entire roadmap.
+                Which professional domain are you targeting?
               </p>
             </div>
 
@@ -188,10 +199,7 @@ function OnboardingContent() {
                     fontSize: "0.85rem",
                     fontWeight: domain === d.label ? 700 : 400,
                     transition: "var(--transition)",
-                    boxShadow: domain === d.label ? "0 0 14px rgba(0,240,255,0.15)" : "none",
                   }}
-                  onMouseOver={(e) => { if (domain !== d.label) e.currentTarget.style.background = "rgba(255,255,255,0.06)"; }}
-                  onMouseOut={(e)  => { if (domain !== d.label) e.currentTarget.style.background = "rgba(255,255,255,0.03)"; }}
                 >
                   <div style={{ fontSize: "1.5rem", marginBottom: "0.4rem" }}>{d.icon}</div>
                   {d.label}
@@ -207,7 +215,7 @@ function OnboardingContent() {
                 disabled={!domain}
                 style={{ flex: 2, padding: "0.9rem", opacity: domain ? 1 : 0.5 }}
               >
-                Continue →
+                Continue Step 2 →
               </button>
             </div>
           </div>
@@ -218,18 +226,17 @@ function OnboardingContent() {
           <div className="fade-in">
             <div style={{ marginBottom: "1.75rem" }}>
               <h2 style={{ fontSize: "1.6rem", fontWeight: 800, color: "white", marginBottom: "0.5rem", fontFamily: "var(--font-sans)" }}>
-                Add Your Skills
+                Step 3: Skill Appraisal
               </h2>
               <p style={{ color: "var(--muted)", fontSize: "0.9rem" }}>
-                Select skills you already have for <strong style={{ color: "var(--primary)" }}>{domain}</strong>, or add your own.
+                List your existing skills so we can identify the knowledge gap.
               </p>
             </div>
 
             {error && <div className="alert alert-error" style={{ marginBottom: "1.25rem" }}>⚠️ {error}</div>}
 
-            {/* Suggested chips */}
             <div style={{ marginBottom: "1.25rem" }}>
-              <p className="form-label">Suggested Skills</p>
+              <p className="form-label">Suggested for {domain}</p>
               <div style={{ display: "flex", flexWrap: "wrap", gap: "0.5rem", marginTop: "0.5rem" }}>
                 {suggestedSkills.map((s) => (
                   <div
@@ -243,7 +250,6 @@ function OnboardingContent() {
                       color: skills.includes(s) ? "var(--primary)" : "var(--muted)",
                       cursor: "pointer",
                       fontSize: "0.85rem",
-                      fontWeight: skills.includes(s) ? 700 : 400,
                       transition: "var(--transition)",
                     }}
                   >
@@ -253,70 +259,61 @@ function OnboardingContent() {
               </div>
             </div>
 
-            {/* Custom skill input */}
-            <div style={{ marginBottom: "1.25rem" }}>
-              <p className="form-label">Add Custom Skill</p>
-              <div style={{ display: "flex", gap: "0.75rem" }}>
-                <input
-                  type="text"
-                  className="input-field"
-                  placeholder="e.g. Rust, PostgreSQL, Figma..."
-                  value={customSkill}
-                  onChange={(e) => setCustomSkill(e.target.value)}
-                  onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); addCustomSkill(); } }}
-                  style={{ flex: 1 }}
-                />
-                <button onClick={addCustomSkill} className="btn-ghost" style={{ flexShrink: 0 }}>
-                  + Add
-                </button>
-              </div>
+            <div style={{ marginBottom: "1.5rem" }}>
+              <p className="form-label">Add Your Own</p>
+              <input
+                type="text"
+                className="input-field"
+                placeholder="Press Enter to add skill"
+                value={customSkill}
+                onChange={(e) => setCustomSkill(e.target.value)}
+                onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); addCustomSkill(); } }}
+              />
             </div>
-
-            {/* Selected skills preview */}
-            {skills.length > 0 && (
-              <div style={{ marginBottom: "1.5rem" }}>
-                <p className="form-label">Selected Skills ({skills.length})</p>
-                <div style={{ display: "flex", flexWrap: "wrap", gap: "0.5rem", marginTop: "0.4rem" }}>
-                  {skills.map((s) => (
-                    <span
-                      key={s}
-                      style={{
-                        display: "inline-flex", alignItems: "center", gap: "0.4rem",
-                        background: "rgba(0,240,255,0.08)", color: "var(--primary)",
-                        border: "1px solid rgba(0,240,255,0.2)", borderRadius: "100px",
-                        padding: "0.3rem 0.75rem", fontSize: "0.8rem", fontWeight: 600,
-                      }}
-                    >
-                      {s}
-                      <button
-                        onClick={() => setSkills((prev) => prev.filter((x) => x !== s))}
-                        style={{ background: "none", border: "none", color: "var(--primary)", cursor: "pointer", fontSize: "0.8rem", padding: 0, lineHeight: 1 }}
-                      >
-                        ×
-                      </button>
-                    </span>
-                  ))}
-                </div>
-              </div>
-            )}
 
             <div style={{ display: "flex", gap: "0.85rem" }}>
               <button onClick={() => setStep(2)} className="btn-ghost" style={{ flex: 1, padding: "0.9rem" }}>← Back</button>
               <button
-                onClick={handleFinish}
+                onClick={async () => {
+                  setLoading(true);
+                  // Save profile first
+                  const ok = await handleFinish();
+                  if (ok) {
+                    setStep(4);
+                  }
+                  setLoading(false);
+                }}
                 className="btn-primary"
                 disabled={loading}
                 style={{ flex: 2, padding: "0.9rem" }}
               >
-                {loading ? (
-                  <span style={{ display: "flex", alignItems: "center", gap: "0.5rem", justifyContent: "center" }}>
-                    <span className="spinner" style={{ width: "18px", height: "18px" }} /> Building Profile...
-                  </span>
-                ) : (
-                  "🚀 Complete Setup"
-                )}
+                {loading ? "Saving Profile..." : "Build My Path →"}
               </button>
             </div>
+          </div>
+        )}
+
+        {/* ── Step 4: AI Generation ── */}
+        {step === 4 && (
+          <div className="fade-in" style={{ textAlign: "center", padding: "2rem 0" }}>
+            <div className="ai-loader" style={{ marginBottom: "2rem" }}>
+              <div className="dot" style={{ width: "15px", height: "15px" }} />
+              <div className="dot" style={{ width: "15px", height: "15px", animationDelay: "0.2s" }} />
+              <div className="dot" style={{ width: "15px", height: "15px", animationDelay: "0.4s" }} />
+            </div>
+            <h2 className="gradient-text" style={{ fontSize: "2rem", fontWeight: 800, marginBottom: "1rem" }}>
+              Generating Personalised Content...
+            </h2>
+            <p style={{ color: "var(--muted)", maxWidth: "400px", margin: "0 auto", lineHeight: 1.6 }}>
+              CarreonX AI is structuring your chapters, setting milestones, and preparing your code sandbox environment.
+            </p>
+            <div style={{ marginTop: "2rem" }}>
+              <p style={{ color: "var(--primary)", fontSize: "0.8rem", fontWeight: 700 }}>Preparing Phase 1: Foundations...</p>
+              <div className="progress-track" style={{ height: "4px", maxWidth: "300px", margin: "0.5rem auto" }}>
+                <div className="progress-fill" style={{ width: "60%", background: "var(--primary)" }} />
+              </div>
+            </div>
+
           </div>
         )}
       </div>

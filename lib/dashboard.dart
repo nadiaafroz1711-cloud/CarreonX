@@ -13,17 +13,21 @@ class DashboardScreen extends StatelessWidget {
         mainAxisSpacing: 20,
         crossAxisSpacing: 20,
         children: [
-          _menuItem(Icons.person, "Profile", Colors.blue),
-          _menuItem(Icons.school, "Learning", Colors.orange),
-          _menuItem(Icons.quiz, "Exams", Colors.green),
-          _menuItem(Icons.insights, "AI Roadmap", Colors.purple),
+          _menuItem(context, Icons.person, "Profile", Colors.blue, '/profile'),
+          _menuItem(context, Icons.school, "Learning", Colors.orange, '/roadmap'),
+          _menuItem(context, Icons.quiz, "Exams", Colors.green, '/exam'),
+          _menuItem(context, Icons.insights, "AI Roadmap", Colors.purple, '/recommendation'),
+          _menuItem(context, Icons.work, "Jobs", Colors.indigo, '/jobs'),
+          _menuItem(context, Icons.mic, "Interview Prep", Colors.teal, '/interview'),
         ],
       ),
     );
   }
 
-  Widget _menuItem(IconData icon, String label, Color color) {
-    return Card(
+  Widget _menuItem(BuildContext context, IconData icon, String label, Color color, String route) {
+    return InkWell(
+      onTap: () => Navigator.pushNamed(context, route),
+      child: Card(
       elevation: 5,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
       child: Column(

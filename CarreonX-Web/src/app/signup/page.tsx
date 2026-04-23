@@ -1,17 +1,26 @@
 "use client";
-import { useState } from "react";
-import Link from "next/link";
+import { useState, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import { API_BASE_URL } from "@/lib/config";
+
+type AuthResponse = {
+  user: {
+    id: number;
+  };
+  token: string;
+  detail?: string;
+};
 
 export default function SignupPage() {
   const [formData, setFormData] = useState({ username: "", email: "", password: "" });
   const [confirmPassword, setConfirmPassword] = useState("");
-  const [error, setError]   = useState("");
+  const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const router = useRouter();
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setError("");
 
@@ -26,191 +35,238 @@ export default function SignupPage() {
 
     setLoading(true);
     try {
-      const res  = await fetch(`${API_BASE_URL}/auth/register`, {
+      const res = await fetch(`${API_BASE_URL}/auth/register`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           username: formData.username,
-          email:    formData.email,
+          email: formData.email,
           password: formData.password,
         }),
       });
-      const data = await res.json();
+      const data: AuthResponse = await res.json();
       if (!res.ok) throw new Error(data.detail || "Registration failed. Please try again.");
-      localStorage.setItem("user",  JSON.stringify(data.user));
+      
+      localStorage.setItem("user", JSON.stringify(data.user));
+      localStorage.setItem("userId", String(data.user.id));
       localStorage.setItem("token", data.token);
       window.dispatchEvent(new Event("auth-change"));
 
-
       router.push(`/onboarding?userId=${data.user.id}`);
-
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : "Registration failed.");
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div
-      style={{
-        minHeight: "calc(100vh - 64px)",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        padding: "2rem",
-        position: "relative",
-      }}
-    >
-      {/* Ambient blobs */}
-      <div style={{ position: "fixed", width: "450px", height: "450px", background: "radial-gradient(circle, var(--secondary) 0%, transparent 70%)", opacity: 0.07, top: "-80px", right: "-80px", zIndex: 0, pointerEvents: "none" }} />
-      <div style={{ position: "fixed", width: "500px", height: "500px", background: "radial-gradient(circle, var(--primary) 0%, transparent 70%)", opacity: 0.07, bottom: "-80px", left: "-80px", zIndex: 0, pointerEvents: "none" }} />
+    <main style={{ backgroundColor: "#000000", minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", position: "relative", overflow: "hidden", fontFamily: "var(--font-sans, sans-serif)", color: "#ffffff", padding: "2rem 0" }}>
+      {/* Background Glow */}
+      <div style={{ position: "absolute", top: "-15%", left: "-10%", width: "600px", height: "600px", background: "radial-gradient(circle, rgba(59,130,246,0.2) 0%, rgba(0,0,0,0) 70%)", filter: "blur(60px)", zIndex: 0, pointerEvents: "none" }}></div>
+      <div style={{ position: "absolute", bottom: "-15%", right: "-10%", width: "500px", height: "500px", background: "radial-gradient(circle, rgba(99,102,241,0.15) 0%, rgba(0,0,0,0) 70%)", filter: "blur(60px)", zIndex: 0, pointerEvents: "none" }}></div>
 
-      <div className="glass-panel fade-up" style={{ maxWidth: "480px", width: "100%", padding: "3.5rem", position: "relative", zIndex: 1 }}>
-        {/* Logo */}
-        <div style={{ textAlign: "center", marginBottom: "2.5rem" }}>
-          <div style={{
-            width: "60px", height: "60px", borderRadius: "16px",
-            background: "linear-gradient(135deg, var(--secondary), var(--primary))",
-            margin: "0 auto 1.25rem",
-            display: "flex", alignItems: "center", justifyContent: "center",
-            fontSize: "1.75rem", boxShadow: "0 4px 24px rgba(189,0,255,0.3)",
-          }}>
-            ✦
-          </div>
-          <h1 style={{ fontSize: "2rem", fontWeight: 800, color: "white", marginBottom: "0.5rem", fontFamily: "var(--font-sans)" }}>
-            Join CarreonX
-          </h1>
-          <p style={{ color: "var(--muted)", fontSize: "0.95rem" }}>
-            Transform your future with AI-guided career precision.
-          </p>
+      {/* Main Glass Container */}
+      <div className="animate-fade-up" style={{ 
+        position: "relative",
+        zIndex: 1,
+        width: "100%", 
+        maxWidth: "360px", 
+        padding: "2rem 1.5rem",
+        background: "rgba(10, 10, 10, 0.6)",
+        backdropFilter: "blur(20px)",
+        WebkitBackdropFilter: "blur(20px)",
+        borderRadius: "24px",
+        border: "1px solid rgba(59, 130, 246, 0.35)",
+        boxShadow: "0 0 40px rgba(59, 130, 246, 0.12), inset 0 1px 0 rgba(255,255,255,0.08)"
+      }}>
+        
+        {/* Title */}
+        <div style={{ marginBottom: "1.5rem", textAlign: "center" }}>
+          <h1 style={{ fontSize: "1.75rem", fontWeight: 800, margin: 0, color: "#60A5FA" }}>Create Account</h1>
         </div>
 
-        {error && <div className="alert alert-error" style={{ marginBottom: "1.5rem" }}>⚠️ {error}</div>}
+        {/* Error Message */}
+        {error && (
+          <div style={{ background: "rgba(248, 113, 113, 0.1)", border: "1px solid rgba(248, 113, 113, 0.3)", color: "#f87171", padding: "1rem", borderRadius: "12px", marginBottom: "1.5rem", fontSize: "0.9rem", textAlign: "center" }}>
+            ✕ {error}
+          </div>
+        )}
 
-        <form onSubmit={handleSubmit} style={{ display: "grid", gap: "1.25rem" }}>
+        <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: "1.2rem" }}>
+          {/* Username Input */}
           <div>
-            <label htmlFor="signup-username" className="form-label">Username</label>
+            <label htmlFor="username" style={{ display: "block", color: "rgba(255,255,255,0.8)", fontSize: "0.85rem", marginBottom: "0.5rem", fontWeight: 600 }}>
+              Username
+            </label>
             <input
-              id="signup-username"
+              id="username"
               type="text"
               required
-              className="input-field"
-              placeholder="alex_dev"
+              minLength={3}
               value={formData.username}
               onChange={(e) => setFormData({ ...formData, username: e.target.value })}
-              minLength={3}
+              placeholder="Your username"
+              style={{
+                width: "100%",
+                background: "rgba(0,0,0,0.4)",
+                border: "1px solid rgba(255,255,255,0.1)",
+                borderRadius: "12px",
+                padding: "0.75rem 1rem",
+                color: "#ffffff",
+                fontSize: "0.9rem",
+                outline: "none",
+                transition: "all 0.3s ease"
+              }}
+              onFocus={(e) => { e.currentTarget.style.borderColor = "#FACC15"; e.currentTarget.style.boxShadow = "0 0 0 3px rgba(250,204,21,0.1)"; }}
+              onBlur={(e) => { e.currentTarget.style.borderColor = "rgba(255,255,255,0.1)"; e.currentTarget.style.boxShadow = "none"; }}
             />
           </div>
 
+          {/* Email Input */}
           <div>
-            <label htmlFor="signup-email" className="form-label">Email Address</label>
+            <label htmlFor="email" style={{ display: "block", color: "rgba(255,255,255,0.8)", fontSize: "0.85rem", marginBottom: "0.5rem", fontWeight: 600 }}>
+              Email Address
+            </label>
             <input
-              id="signup-email"
+              id="email"
               type="email"
               required
-              className="input-field"
-              placeholder="alex@CarreonX.com"
               value={formData.email}
               onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+              placeholder="you@example.com"
+              style={{
+                width: "100%",
+                background: "rgba(0,0,0,0.4)",
+                border: "1px solid rgba(255,255,255,0.1)",
+                borderRadius: "12px",
+                padding: "0.75rem 1rem",
+                color: "#ffffff",
+                fontSize: "0.9rem",
+                outline: "none",
+                transition: "all 0.3s ease"
+              }}
+              onFocus={(e) => { e.currentTarget.style.borderColor = "#FACC15"; e.currentTarget.style.boxShadow = "0 0 0 3px rgba(250,204,21,0.1)"; }}
+              onBlur={(e) => { e.currentTarget.style.borderColor = "rgba(255,255,255,0.1)"; e.currentTarget.style.boxShadow = "none"; }}
             />
           </div>
 
+          {/* Password Input */}
           <div>
-            <label htmlFor="signup-password" className="form-label">Password</label>
-            <input
-              id="signup-password"
-              type="password"
-              required
-              className="input-field"
-              placeholder="Min. 6 characters"
-              value={formData.password}
-              onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-              minLength={6}
-            />
-          </div>
-
-          <div>
-            <label htmlFor="signup-confirm" className="form-label">Confirm Password</label>
-            <input
-              id="signup-confirm"
-              type="password"
-              required
-              className="input-field"
-              placeholder="Re-enter your password"
-              value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
-              minLength={6}
-            />
-          </div>
-
-          {/* Password strength bar */}
-          {formData.password && (
-            <div>
-              <div className="progress-track" style={{ height: "5px" }}>
-                <div
-                  className="progress-fill"
-                  style={{
-                    width:
-                      formData.password.length >= 12 ? "100%" :
-                      formData.password.length >= 8  ? "66%"  :
-                      formData.password.length >= 6  ? "33%"  : "10%",
-                    background:
-                      formData.password.length >= 12 ? "var(--success)" :
-                      formData.password.length >= 8  ? "var(--primary)" :
-                      formData.password.length >= 6  ? "var(--warning)" : "var(--danger)",
-                    boxShadow: "none",
-                  }}
-                />
-              </div>
-              <p style={{ color: "var(--muted)", fontSize: "0.75rem", marginTop: "0.35rem" }}>
-                Strength:{" "}
-                <span style={{
-                  color:
-                    formData.password.length >= 12 ? "var(--success)" :
-                    formData.password.length >= 8  ? "var(--primary)" :
-                    formData.password.length >= 6  ? "var(--warning)" : "var(--danger)",
-                  fontWeight: 600,
-                }}>
-                  {formData.password.length >= 12 ? "Strong" :
-                   formData.password.length >= 8  ? "Good"   :
-                   formData.password.length >= 6  ? "Fair"   : "Weak"}
-                </span>
-              </p>
+            <label htmlFor="password" style={{ display: "block", color: "rgba(255,255,255,0.8)", fontSize: "0.85rem", marginBottom: "0.5rem", fontWeight: 600 }}>
+              Password
+            </label>
+            <div style={{ position: "relative" }}>
+              <input
+                id="password"
+                type={showPassword ? "text" : "password"}
+                required
+                minLength={6}
+                value={formData.password}
+                onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                placeholder="Min. 6 characters"
+                style={{
+                  width: "100%",
+                  background: "rgba(0,0,0,0.4)",
+                  border: "1px solid rgba(255,255,255,0.1)",
+                  borderRadius: "12px",
+                  padding: "0.75rem 2.5rem 0.75rem 1rem",
+                  color: "#ffffff",
+                  fontSize: "0.9rem",
+                  outline: "none",
+                  transition: "all 0.3s ease"
+                }}
+                onFocus={(e) => { e.currentTarget.style.borderColor = "#3B82F6"; e.currentTarget.style.boxShadow = "0 0 0 3px rgba(59,130,246,0.15)"; }}
+                onBlur={(e) => { e.currentTarget.style.borderColor = "rgba(255,255,255,0.1)"; e.currentTarget.style.boxShadow = "none"; }}
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                style={{ position: "absolute", right: "12px", top: "50%", transform: "translateY(-50%)", background: "transparent", border: "none", cursor: "pointer", display: "flex", padding: "4px" }}
+                title={showPassword ? "Hide password" : "Show password"}
+              >
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.6)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  {showPassword ? (
+                    <><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></>
+                  ) : (
+                    <><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></>
+                  )}
+                </svg>
+              </button>
             </div>
-          )}
+          </div>
 
+          {/* Confirm Password Input */}
+          <div>
+            <label htmlFor="confirm" style={{ display: "block", color: "rgba(255,255,255,0.8)", fontSize: "0.85rem", marginBottom: "0.5rem", fontWeight: 600 }}>
+              Confirm Password
+            </label>
+            <div style={{ position: "relative" }}>
+              <input
+                id="confirm"
+                type={showConfirmPassword ? "text" : "password"}
+                required
+                minLength={6}
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                placeholder="Re-enter your password"
+                style={{
+                  width: "100%",
+                  background: "rgba(0,0,0,0.4)",
+                  border: "1px solid rgba(255,255,255,0.1)",
+                  borderRadius: "12px",
+                  padding: "0.75rem 2.5rem 0.75rem 1rem",
+                  color: "#ffffff",
+                  fontSize: "0.9rem",
+                  outline: "none",
+                  transition: "all 0.3s ease"
+                }}
+                onFocus={(e) => { e.currentTarget.style.borderColor = "#3B82F6"; e.currentTarget.style.boxShadow = "0 0 0 3px rgba(59,130,246,0.15)"; }}
+                onBlur={(e) => { e.currentTarget.style.borderColor = "rgba(255,255,255,0.1)"; e.currentTarget.style.boxShadow = "none"; }}
+              />
+              <button
+                type="button"
+                onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                style={{ position: "absolute", right: "12px", top: "50%", transform: "translateY(-50%)", background: "transparent", border: "none", cursor: "pointer", display: "flex", padding: "4px" }}
+                title={showConfirmPassword ? "Hide password" : "Show password"}
+              >
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.6)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  {showConfirmPassword ? (
+                    <><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></>
+                  ) : (
+                    <><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></>
+                  )}
+                </svg>
+              </button>
+            </div>
+          </div>
+
+          {/* Submit Button */}
           <button
-            id="signup-submit"
             type="submit"
-            className="btn-primary"
             disabled={loading}
-            style={{ padding: "1rem", fontSize: "1rem", marginTop: "0.25rem" }}
+            style={{
+              width: "100%",
+              marginTop: "0.5rem",
+              padding: "0.8rem",
+              fontSize: "1rem",
+              fontWeight: 700,
+              color: "#ffffff",
+              background: "linear-gradient(135deg, #3B82F6, #6366F1)",
+              border: "none",
+              borderRadius: "12px",
+              cursor: loading ? "not-allowed" : "pointer",
+              transition: "transform 0.2s ease, box-shadow 0.2s ease",
+              boxShadow: "0 8px 24px rgba(59,130,246,0.35)",
+              opacity: loading ? 0.8 : 1
+            }}
+            onMouseOver={(e) => { if(!loading) { e.currentTarget.style.transform = "translateY(-2px)"; e.currentTarget.style.boxShadow = "0 12px 32px rgba(59,130,246,0.5)"; }}}
+            onMouseOut={(e) => { if(!loading) { e.currentTarget.style.transform = "none"; e.currentTarget.style.boxShadow = "0 8px 24px rgba(59,130,246,0.35)"; }}}
           >
-            {loading ? (
-              <span style={{ display: "flex", alignItems: "center", gap: "0.5rem", justifyContent: "center" }}>
-                <span className="spinner" style={{ width: "18px", height: "18px" }} /> Creating account...
-              </span>
-            ) : (
-              "Create My Account ✦"
-            )}
+            {loading ? "Creating Account..." : "Create Account"}
           </button>
         </form>
-
-        <div className="divider" style={{ margin: "2rem 0" }} />
-
-        <p style={{ textAlign: "center", color: "var(--muted)", fontSize: "0.9rem" }}>
-          Already have an account?{" "}
-          <Link
-            href="/login"
-            style={{ color: "var(--primary)", fontWeight: 600, textDecoration: "none" }}
-            onMouseOver={(e) => (e.currentTarget.style.color = "var(--secondary)")}
-            onMouseOut={(e)  => (e.currentTarget.style.color = "var(--primary)")}
-          >
-            Sign In →
-          </Link>
-        </p>
       </div>
-    </div>
+    </main>
   );
 }

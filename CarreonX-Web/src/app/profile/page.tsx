@@ -4,9 +4,20 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { API_BASE_URL } from "@/lib/config";
 
+type SessionUser = {
+  id: number;
+  username: string;
+  email: string;
+};
+
+type CareerProfile = {
+  domain?: string;
+  skills?: string[] | string;
+};
+
 export default function ProfilePage() {
-  const [user, setUser]         = useState<any>(null);
-  const [profile, setProfile]   = useState<any>(null);
+  const [user, setUser]         = useState<SessionUser | null>(null);
+  const [profile, setProfile]   = useState<CareerProfile | null>(null);
   const [loadingProfile, setLoadingProfile] = useState(true);
   const router = useRouter();
 
@@ -23,10 +34,15 @@ export default function ProfilePage() {
 
   // 2. Fetch career profile from backend
   useEffect(() => {
-    if (!user) return;
+    const userId = user?.id;
+    if (!userId) {
+      setLoadingProfile(false);
+      return;
+    }
+
     async function fetchProfile() {
       try {
-        const res = await fetch(`${API_BASE_URL}/profile/${user.id}`);
+        const res = await fetch(`${API_BASE_URL}/profile/${userId}`);
         if (res.ok) {
           const data = await res.json();
           setProfile(data);
@@ -212,7 +228,7 @@ export default function ProfilePage() {
           ) : (
             <div style={{ textAlign: "center", padding: "2rem" }}>
               <p style={{ color: "var(--muted)", marginBottom: "1.5rem" }}>
-                You haven't set up your career profile yet. Set it up so CarreonX can personalise your roadmap and recommendations.
+                You haven&apos;t set up your career profile yet. Set it up so CarreonX can personalise your roadmap and recommendations.
               </p>
               <Link href="/onboarding" className="btn-primary">
                 🚀 Set Up Career Profile

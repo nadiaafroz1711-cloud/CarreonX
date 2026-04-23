@@ -1,6 +1,5 @@
 import os
 import json
-from google import genai
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 from dotenv import load_dotenv
@@ -8,13 +7,18 @@ from backend.database.connection import get_db
 from backend.models.scores import MockTestScore
 from pydantic import BaseModel
 
+try:
+    from google import genai
+except ImportError:
+    genai = None
+
 load_dotenv(os.path.join(os.path.dirname(os.path.dirname(__file__)), ".env"))
 
 router = APIRouter(prefix="/mocktest", tags=["Mock Test"])
 
 # Configure Gemini
 api_key = os.getenv("GEMINI_API_KEY")
-client = genai.Client(api_key=api_key)
+client = genai.Client(api_key=api_key) if genai and api_key else None
 
 class TestSubmission(BaseModel):
     user_id: int
@@ -33,10 +37,14 @@ async def generate_mock_test(subject: str = Query(..., description="The topic fo
     """
     
     try:
+        if not client or not api_key:
+            raise ValueError("Gemini client unavailable")
+
         response = client.models.generate_content(
-            model="gemini-1.5-flash",
+            model="gemini-3-flash-preview",
             contents=prompt
         )
+
         clean_json = response.text.strip().replace("```json", "").replace("```", "").strip()
         questions = json.loads(clean_json)
         return {"subject": subject, "questions": questions}

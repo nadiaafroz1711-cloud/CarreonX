@@ -17,8 +17,7 @@ class DashboardScreen extends StatelessWidget {
           _card(context, "Profile", Icons.person, Colors.blue, '/profile'),
           _card(context, "Exams", Icons.quiz, Colors.green, '/exam'),
           _card(context, "Roadmap", Icons.map, Colors.orange, '/roadmap'),
-          _card(context, "AI Advice", Icons.psychology, Colors.purple,
-              '/recommendation'),
+          _card(context, "Chatbot", Icons.chat, Colors.purple, '/chatbot'),
         ],
       ),
     );

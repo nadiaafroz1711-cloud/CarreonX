@@ -50,7 +50,7 @@ class _LanguageScreenState extends State<LanguageScreen> {
                     Container(
                       padding: const EdgeInsets.all(16),
                       decoration: BoxDecoration(
-                        color: Colors.indigo.withOpacity(0.1),
+                        color: Colors.indigo.withValues(alpha: 0.1),
                         shape: BoxShape.circle,
                       ),
                       child: const Icon(Icons.translate,
@@ -58,7 +58,7 @@ class _LanguageScreenState extends State<LanguageScreen> {
                     ),
                     const SizedBox(height: 24),
                     const Text(
-                      "Choose Language",
+                      "Select Your Preferred Language",
                       style:
                           TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
                     ),

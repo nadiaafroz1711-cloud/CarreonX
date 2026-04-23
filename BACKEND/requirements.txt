@@ -1,6 +1,10 @@
 fastapi
 uvicorn
+google-genai
 google-generativeai
 sqlalchemy
 email-validator
 python-dotenv
+pandas
+passlib
+PyJWT

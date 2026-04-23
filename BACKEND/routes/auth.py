@@ -3,7 +3,7 @@ from fastapi import APIRouter, HTTPException, status, Depends
 from sqlalchemy.orm import Session
 from backend.database.connection import get_db
 from backend.models.user import User
-from backend.schemas.user_schemas import UserCreate, UserLogin, UserResponse
+from backend.schemas.user_schemas import UserCreate, UserLogin, UserResponse, ForgotPasswordRequest
 
 router = APIRouter(
     prefix="/auth",
@@ -15,7 +15,8 @@ import jwt
 import os
 from datetime import datetime, timedelta
 
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+pwd_context = CryptContext(schemes=["pbkdf2_sha256"], deprecated="auto")
+
 SECRET_KEY = os.getenv("SECRET_KEY", "your_secret_123")
 ALGORITHM = "HS256"
 
@@ -96,3 +97,16 @@ async def login(credentials: UserLogin, db: Session = Depends(get_db)):
         },
         "token": create_access_token(user.id)
     }
+
+@router.post("/forgot-password")
+async def forgot_password(request: ForgotPasswordRequest, db: Session = Depends(get_db)):
+    user = db.query(User).filter(User.email == request.email).first()
+    
+    # We always return the same message to prevent email enumeration
+    message = "If an account exists with this email, you will receive password reset instructions soon."
+    
+    if user:
+        # In a real app, you'd generate a temporary token and send an email
+        print(f"\n[DEV MODE] Password reset link for {user.email}: http://localhost:3000/reset-password?token=mock_token_{user.id}\n")
+        
+    return {"message": message}

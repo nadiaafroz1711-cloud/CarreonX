@@ -3,10 +3,25 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { API_BASE_URL } from "@/lib/config";
 
+type SessionUser = {
+  id: number;
+  username: string;
+};
+
+type DashboardStats = {
+  progress_stats?: {
+    completed_count: number;
+    total_count: number;
+    progress_percentage: number;
+  };
+  latest_test_score?: number;
+  status?: string;
+};
+
 export default function ProgressPage() {
-  const [stats, setStats]     = useState<any>(null);
+  const [stats, setStats]     = useState<DashboardStats | null>(null);
   const [loading, setLoading] = useState(true);
-  const [user, setUser]       = useState<any>(null);
+  const [user, setUser]       = useState<SessionUser | null>(null);
 
   useEffect(() => {
     const userStr = localStorage.getItem("user");

@@ -1,9 +1,9 @@
 career,skill,resource,level
-Data Science,Python Programming,https://www.coursera.org/specializations/python,Beginner
-Data Science,Statistics and Probability,https://www.khanacademy.org/math/statistics-probability,Intermediate
-Data Science,Machine Learning Basics,https://www.udemy.com/course/machinelearning/,Advanced
-Web Development,HTML & CSS,https://web.dev/learn/html/,Beginner
-Web Development,JavaScript Essentials,https://javascript.info/,Beginner
-Web Development,React.js Framework,https://react.dev/learn,Intermediate
-Cloud Engineering,Virtualization Fundamentals,https://www.edx.org/course/cloud-computing-fundamentals,Beginner
-Cloud Engineering,AWS Cloud Practitioner,https://aws.amazon.com/training/digital/aws-cloud-practitioner-essentials/,Intermediate
+Data Science,Python Programming,https://www.youtube.com/results?search_query=python+programming+full+course,Beginner
+Data Science,Statistics and Probability,https://www.w3schools.com/statistics/,Intermediate
+Data Science,Machine Learning Basics,https://www.geeksforgeeks.org/machine-learning/,Advanced
+Web Development,HTML & CSS,https://www.w3schools.com/html/,Beginner
+Web Development,JavaScript Essentials,https://www.geeksforgeeks.org/javascript/,Beginner
+Web Development,React.js Framework,https://www.youtube.com/results?search_query=reactjs+tutorial+for+beginners,Intermediate
+Cloud Engineering,Virtualization Fundamentals,https://www.geeksforgeeks.org/virtualization-in-cloud-computing/,Beginner
+Cloud Engineering,AWS Cloud Practitioner,https://www.youtube.com/results?search_query=aws+cloud+practitioner+full+course,Intermediate

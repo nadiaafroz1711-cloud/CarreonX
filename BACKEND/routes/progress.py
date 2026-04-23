@@ -7,16 +7,29 @@ router = APIRouter(prefix="/progress", tags=["Progress"])
 
 @router.post("/update")
 def update_progress(user_id: int, title: str, category: str, completion_percentage: float = 0.0, db: Session = Depends(get_db)):
-    progress = UserProgress(
-        user_id=user_id,
-        title=title,
-        category=category,
-        completion_percentage=completion_percentage
-    )
-    db.add(progress)
+    # 1. Check if record already exists
+    progress = db.query(UserProgress).filter(
+        UserProgress.user_id == user_id,
+        UserProgress.title == title
+    ).first()
+
+    if progress:
+        # 2. Update existing
+        progress.completion_percentage = completion_percentage
+        progress.category = category
+    else:
+        # 3. Create new if missing
+        progress = UserProgress(
+            user_id=user_id,
+            title=title,
+            category=category,
+            completion_percentage=completion_percentage
+        )
+        db.add(progress)
+
     db.commit()
     db.refresh(progress)
-    return {"message": "Progress updated", "id": progress.id}
+    return {"message": "Progress updated", "id": progress.id, "completion": progress.completion_percentage}
 
 @router.get("/{user_id}")
 def get_progress(user_id: int, db: Session = Depends(get_db)):

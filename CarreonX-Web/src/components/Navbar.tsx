@@ -4,18 +4,23 @@ import Link from "next/link";
 import { useRouter, usePathname } from "next/navigation";
 
 const NAV_ITEMS = [
-  { href: "/",          label: "Home" },
-  { href: "/roadmap",   label: "Roadmap" },
-  { href: "/chat",      label: "AI Mentor" },
-  { href: "/progress",  label: "Progress" },
-  { href: "/mocktest",  label: "Mock Test" },
-  { href: "/profile",   label: "Profile" },
+  { href: "/dashboard", label: "Dashboard" },
+  { href: "/roadmap", label: "Roadmap" },
+  { href: "/courses", label: "Courses" },
+  { href: "/chat", label: "AI Mentor" },
+  { href: "/progress", label: "Progress" },
+  { href: "/mocktest", label: "Mock Test" },
+  { href: "/profile", label: "Profile" },
 ];
 
+type SessionUser = {
+  username?: string;
+};
+
 export default function Navbar() {
-  const [user, setUser]       = useState<any>(null);
+  const [user, setUser] = useState<SessionUser | null>(null);
   const [scrolled, setScrolled] = useState(false);
-  const router   = useRouter();
+  const router = useRouter();
   const pathname = usePathname();
 
   useEffect(() => {
@@ -23,20 +28,19 @@ export default function Navbar() {
       const savedUser = localStorage.getItem("user");
       setUser(savedUser ? JSON.parse(savedUser) : null);
     };
+
     onStorage();
     window.addEventListener("storage", onStorage);
     window.addEventListener("auth-change", onStorage);
-    
-    // Check every 2s as a fallback for internal state changes
+
     const interval = setInterval(onStorage, 2000);
-    
+
     return () => {
       window.removeEventListener("storage", onStorage);
       window.removeEventListener("auth-change", onStorage);
       clearInterval(interval);
     };
   }, [pathname]);
-
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 10);
@@ -50,7 +54,6 @@ export default function Navbar() {
     window.dispatchEvent(new Event("auth-change"));
     setUser(null);
     router.push("/login");
-
   };
 
   return (
@@ -61,12 +64,10 @@ export default function Navbar() {
         transition: "box-shadow 0.3s ease",
       }}
     >
-      {/* LOGO */}
-      <Link href="/" className="nav-logo gradient-text" style={{ textDecoration: "none" }}>
+      <Link href={user ? "/dashboard" : "/login"} className="nav-logo gradient-text" style={{ textDecoration: "none" }}>
         CarreonX
       </Link>
 
-      {/* NAV LINKS */}
       {NAV_ITEMS.map((item) => (
         <Link
           key={item.href}
@@ -77,13 +78,10 @@ export default function Navbar() {
         </Link>
       ))}
 
-      {/* SPACER */}
       <div className="nav-spacer" />
 
-      {/* USER SECTION */}
       {user ? (
         <div style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
-          {/* Avatar */}
           <div
             title={user.username}
             style={{

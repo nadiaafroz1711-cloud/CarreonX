@@ -1,163 +1,172 @@
 "use client";
-import { useState, Suspense } from "react";
+
+import { useState } from "react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { useRouter, useSearchParams } from "next/navigation";
 import { API_BASE_URL } from "@/lib/config";
 
-function LoginContent() {
-  const [formData, setFormData] = useState({ email: "", password: "" });
-  const [error, setError]       = useState("");
-  const [loading, setLoading]   = useState(false);
-  const router       = useRouter();
-  const searchParams = useSearchParams();
-  const message      = searchParams.get("message");
+export default function LoginPage() {
+  const router = useRouter();
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setError("");
 
     try {
-      const res  = await fetch(`${API_BASE_URL}/auth/login`, {
+      const res = await fetch(`${API_BASE_URL}/auth/login`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData),
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email, password }),
       });
+
       const data = await res.json();
-      if (!res.ok) throw new Error(data.detail || "Login failed. Please check your credentials.");
 
-      localStorage.setItem("user",  JSON.stringify(data.user));
-      localStorage.setItem("token", data.token);
-      window.dispatchEvent(new Event("auth-change"));
-
-      // Check for existing profile
-      try {
-        const profileRes = await fetch(`${API_BASE_URL}/profile/${data.user.id}`);
-        router.push(profileRes.ok ? "/" : "/onboarding");
-      } catch {
-        router.push("/onboarding");
+      if (!res.ok) {
+        throw new Error(data.message || "Invalid credentials");
       }
-    } catch (err: any) {
-      setError(err.message);
+
+      localStorage.setItem("userId", String(data.user.id));
+      localStorage.setItem("token", data.token);
+      localStorage.setItem("user", JSON.stringify(data.user));
+
+      router.push("/onboarding");
+
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Login failed");
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div
-      style={{
-        minHeight: "calc(100vh - 64px)",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        padding: "2rem",
-        position: "relative",
-      }}
-    >
-      {/* Ambient blobs */}
-      <div style={{ position: "fixed", width: "450px", height: "450px", background: "radial-gradient(circle, var(--primary) 0%, transparent 70%)", opacity: 0.07, top: "-80px", left: "-80px", zIndex: 0, pointerEvents: "none" }} />
-      <div style={{ position: "fixed", width: "500px", height: "500px", background: "radial-gradient(circle, var(--secondary) 0%, transparent 70%)", opacity: 0.07, bottom: "-80px", right: "-80px", zIndex: 0, pointerEvents: "none" }} />
+    <main style={{ backgroundColor: "#000000", minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", position: "relative", overflow: "hidden", fontFamily: "var(--font-sans, sans-serif)", color: "#ffffff" }}>
+      {/* Background Glow */}
+      <div style={{ position: "absolute", top: "-15%", left: "-10%", width: "600px", height: "600px", background: "radial-gradient(circle, rgba(59,130,246,0.2) 0%, rgba(0,0,0,0) 70%)", filter: "blur(60px)", zIndex: 0, pointerEvents: "none" }}></div>
+      <div style={{ position: "absolute", bottom: "-15%", right: "-10%", width: "500px", height: "500px", background: "radial-gradient(circle, rgba(99,102,241,0.15) 0%, rgba(0,0,0,0) 70%)", filter: "blur(60px)", zIndex: 0, pointerEvents: "none" }}></div>
 
-      <div className="glass-panel fade-up" style={{ maxWidth: "440px", width: "100%", padding: "3.5rem", position: "relative", zIndex: 1 }}>
-        {/* Logo */}
-        <div style={{ textAlign: "center", marginBottom: "2.5rem" }}>
-          <div style={{
-            width: "60px", height: "60px", borderRadius: "16px",
-            background: "linear-gradient(135deg, var(--primary), var(--secondary))",
-            margin: "0 auto 1.25rem",
-            display: "flex", alignItems: "center", justifyContent: "center",
-            fontSize: "1.75rem", boxShadow: "0 4px 24px rgba(0,240,255,0.3)",
-          }}>
-            🚀
-          </div>
-          <h1 style={{ fontSize: "2rem", fontWeight: 800, color: "white", marginBottom: "0.5rem", fontFamily: "var(--font-sans)" }}>
-            Welcome Back
-          </h1>
-          <p style={{ color: "var(--muted)", fontSize: "0.95rem" }}>
-            Continue your journey to career mastery.
-          </p>
+      {/* Main Glass Container */}
+      <div className="animate-fade-up" style={{ 
+        position: "relative",
+        zIndex: 1,
+        width: "100%", 
+        maxWidth: "360px", 
+        padding: "2rem 1.5rem",
+        background: "rgba(10, 10, 10, 0.6)",
+        backdropFilter: "blur(20px)",
+        WebkitBackdropFilter: "blur(20px)",
+        borderRadius: "24px",
+        border: "1px solid rgba(59, 130, 246, 0.35)",
+        boxShadow: "0 0 40px rgba(59, 130, 246, 0.12), inset 0 1px 0 rgba(255,255,255,0.08)"
+      }}>
+        
+        {/* Title */}
+        <div style={{ marginBottom: "1.5rem", textAlign: "center" }}>
+          <h1 style={{ fontSize: "1.75rem", fontWeight: 800, margin: 0, color: "#60A5FA" }}>Welcome</h1>
         </div>
 
-        {message && <div className="alert alert-info" style={{ marginBottom: "1.5rem" }}>ℹ️ {message}</div>}
-        {error   && <div className="alert alert-error" style={{ marginBottom: "1.5rem" }}>⚠️ {error}</div>}
+        {/* Error Message */}
+        {error && (
+          <div style={{ background: "rgba(248, 113, 113, 0.1)", border: "1px solid rgba(248, 113, 113, 0.3)", color: "#f87171", padding: "1rem", borderRadius: "12px", marginBottom: "1.5rem", fontSize: "0.9rem", textAlign: "center" }}>
+            ✕ {error}
+          </div>
+        )}
 
-        <form onSubmit={handleSubmit} style={{ display: "grid", gap: "1.25rem" }}>
+        <form onSubmit={handleLogin} style={{ display: "flex", flexDirection: "column", gap: "1.25rem" }}>
+          {/* Email Input */}
           <div>
-            <label htmlFor="login-email" className="form-label">Email Address</label>
+            <label htmlFor="email" style={{ display: "block", color: "rgba(255,255,255,0.8)", fontSize: "0.85rem", marginBottom: "0.5rem", fontWeight: 600 }}>
+              Email Address
+            </label>
             <input
-              id="login-email"
+              id="email"
               type="email"
               required
-              className="input-field"
-              placeholder="alex@CarreonX.com"
-              value={formData.email}
-              onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="you@example.com"
+              style={{
+                width: "100%",
+                background: "rgba(0,0,0,0.4)",
+                border: "1px solid rgba(255,255,255,0.1)",
+                borderRadius: "12px",
+                padding: "0.75rem 1rem",
+                color: "#ffffff",
+                fontSize: "0.9rem",
+                outline: "none",
+                transition: "all 0.3s ease"
+              }}
+              onFocus={(e) => { e.currentTarget.style.borderColor = "#3B82F6"; e.currentTarget.style.boxShadow = "0 0 0 3px rgba(59,130,246,0.15)"; }}
+              onBlur={(e) => { e.currentTarget.style.borderColor = "rgba(255,255,255,0.1)"; e.currentTarget.style.boxShadow = "none"; }}
             />
           </div>
+
+          {/* Password Input */}
           <div>
-            <label htmlFor="login-password" className="form-label">Password</label>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: "0.5rem" }}>
+              <label htmlFor="password" style={{ color: "rgba(255,255,255,0.8)", fontSize: "0.85rem", fontWeight: 600 }}>
+                Password
+              </label>
+              <Link href="/forgot-password" style={{ color: "#60A5FA", fontSize: "0.8rem", textDecoration: "none", fontWeight: 600 }}>
+                Forgot Password?
+              </Link>
+            </div>
             <input
-              id="login-password"
+              id="password"
               type="password"
               required
-              className="input-field"
-              placeholder="••••••••"
-              value={formData.password}
-              onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder="Enter your password"
+              style={{
+                width: "100%",
+                background: "rgba(0,0,0,0.4)",
+                border: "1px solid rgba(255,255,255,0.1)",
+                borderRadius: "12px",
+                padding: "1rem 1.25rem",
+                color: "#ffffff",
+                fontSize: "1rem",
+                outline: "none",
+                transition: "all 0.3s ease"
+              }}
+              onFocus={(e) => { e.currentTarget.style.borderColor = "#3B82F6"; e.currentTarget.style.boxShadow = "0 0 0 3px rgba(59,130,246,0.15)"; }}
+              onBlur={(e) => { e.currentTarget.style.borderColor = "rgba(255,255,255,0.1)"; e.currentTarget.style.boxShadow = "none"; }}
             />
           </div>
 
+          {/* Submit Button */}
           <button
             type="submit"
-            id="login-submit"
-            className="btn-primary"
             disabled={loading}
-            style={{ padding: "1rem", fontSize: "1rem", marginTop: "0.5rem" }}
+            style={{
+              width: "100%",
+              marginTop: "0.5rem",
+              padding: "0.8rem",
+              fontSize: "1rem",
+              fontWeight: 700,
+              color: "#ffffff",
+              background: "linear-gradient(135deg, #3B82F6, #6366F1)",
+              border: "none",
+              borderRadius: "12px",
+              cursor: loading ? "not-allowed" : "pointer",
+              transition: "transform 0.2s ease, box-shadow 0.2s ease",
+              boxShadow: "0 8px 24px rgba(59,130,246,0.35)",
+              opacity: loading ? 0.8 : 1
+            }}
+            onMouseOver={(e) => { if(!loading) { e.currentTarget.style.transform = "translateY(-2px)"; e.currentTarget.style.boxShadow = "0 12px 32px rgba(59,130,246,0.5)"; }}}
+            onMouseOut={(e) => { if(!loading) { e.currentTarget.style.transform = "none"; e.currentTarget.style.boxShadow = "0 8px 24px rgba(59,130,246,0.35)"; }}}
           >
-            {loading ? (
-              <span style={{ display: "flex", alignItems: "center", gap: "0.5rem", justifyContent: "center" }}>
-                <span className="spinner" style={{ width: "18px", height: "18px" }} /> Authenticating...
-              </span>
-            ) : (
-              "Sign In →"
-            )}
+            {loading ? "Logging in..." : "Log In"}
           </button>
         </form>
-
-        <div className="divider" style={{ margin: "2rem 0" }} />
-
-        <div style={{ textAlign: "center", display: "flex", flexDirection: "column", gap: "0.75rem" }}>
-          <p style={{ color: "var(--muted)", fontSize: "0.9rem" }}>
-            New to CarreonX?{" "}
-            <Link
-              href="/signup"
-              style={{ color: "var(--secondary)", fontWeight: 600, textDecoration: "none", transition: "var(--transition)" }}
-              onMouseOver={(e) => (e.currentTarget.style.color = "var(--primary)")}
-              onMouseOut={(e)  => (e.currentTarget.style.color = "var(--secondary)")}
-            >
-              Create free account →
-            </Link>
-          </p>
-          <div style={{ display: "flex", gap: "0.5rem", justifyContent: "center", flexWrap: "wrap" }}>
-            <span className="badge badge-primary">🗺️ Free Roadmap</span>
-            <span className="badge badge-secondary">🤖 AI Mentor</span>
-            <span className="badge badge-success">🧪 Mock Tests</span>
-          </div>
-        </div>
       </div>
-    </div>
-  );
-}
-
-export default function LoginPage() {
-  return (
-    <Suspense fallback={
-      <div style={{ minHeight: "calc(100vh - 64px)", display: "flex", justifyContent: "center", alignItems: "center" }}>
-        <div className="ai-loader"><div className="dot" /><div className="dot" /><div className="dot" /></div>
-      </div>
-    }>
-      <LoginContent />
-    </Suspense>
+    </main>
   );
 }

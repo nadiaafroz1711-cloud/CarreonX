@@ -1,6 +1,7 @@
 "use client";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, Suspense } from "react";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { API_BASE_URL } from "@/lib/config";
 
 interface Message {
@@ -17,7 +18,10 @@ const SUGGESTIONS = [
   "Give me a 30-day study plan",
 ];
 
-export default function ChatPage() {
+function ChatContent() {
+  const searchParams = useSearchParams();
+  const q = searchParams.get("q");
+
   const [messages, setMessages] = useState<Message[]>([
     {
       id: 1,
@@ -26,11 +30,13 @@ export default function ChatPage() {
       ts: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
     },
   ]);
-  const [input, setInput]   = useState("");
+  const [input, setInput]     = useState("");
   const [loading, setLoading] = useState(false);
-  const [userId, setUserId]   = useState<number | null>(null);   // ✅ FIX: was missing
+  const [isOnline, setIsOnline] = useState<boolean | null>(null);
+  const [userId, setUserId]   = useState<number | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef       = useRef<HTMLInputElement>(null);
+  const hasAutoAsked   = useRef(false);
 
   useEffect(() => {
     const userStr = localStorage.getItem("user");
@@ -38,11 +44,64 @@ export default function ChatPage() {
       const u = JSON.parse(userStr);
       setUserId(u.id);
     }
+    // Check if AI is online
+    fetch(`${API_BASE_URL}/chatbot/status`)
+      .then(r => r.json())
+      .then(d => setIsOnline(d.status === "online"))
+      .catch(() => setIsOnline(false));
   }, []);
 
+  // Use the sendMessage function as a ref or useCallback if needed, but here we can just safely call it.
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages]);
+    if (q && !hasAutoAsked.current) {
+      hasAutoAsked.current = true;
+      // Small timeout ensures state is fully hydrated
+      setTimeout(() => {
+        handleAutoSend(q);
+      }, 100);
+    }
+  }, [q]);
+
+  const handleAutoSend = async (text: string) => {
+    if (!text.trim()) return;
+    const userMsg: Message = {
+      id: Date.now(),
+      role: "user",
+      text,
+      ts: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+    };
+    setMessages((prev) => [...prev, userMsg]);
+    setLoading(true);
+
+    try {
+      const uid = localStorage.getItem("userId") ?? 1;
+      const response = await fetch(
+        `${API_BASE_URL}/chatbot/ask?user_id=${uid}&question=${encodeURIComponent(text)}`,
+        { method: "POST" }
+      );
+      const data = await response.json();
+      const aiMsg: Message = {
+        id: Date.now() + 1,
+        role: "ai",
+        text: data.answer || "I'm having trouble connecting right now. Please try again shortly.",
+        ts: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+      };
+      setMessages((prev) => [...prev, aiMsg]);
+    } catch {
+      setMessages((prev) => [
+        ...prev,
+        {
+          id: Date.now() + 1,
+          role: "ai",
+          text: `⚠️ Cannot reach the backend. Make sure the server is running.`,
+          ts: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+        },
+      ]);
+    } finally {
+      setLoading(false);
+      inputRef.current?.focus();
+    }
+  };
 
   const sendMessage = async (text: string) => {
     if (!text.trim() || loading) return;
@@ -81,7 +140,6 @@ export default function ChatPage() {
         },
       ]);
     } finally {
-
       setLoading(false);
       inputRef.current?.focus();
     }
@@ -91,6 +149,10 @@ export default function ChatPage() {
     e.preventDefault();
     sendMessage(input);
   };
+
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages]);
 
   return (
     <div
@@ -129,8 +191,10 @@ export default function ChatPage() {
           <div>
             <h1 style={{ fontSize: "1.1rem", fontWeight: 700, color: "white" }}>CarreonX Mentor</h1>
             <div style={{ display: "flex", alignItems: "center", gap: "0.4rem" }}>
-              <span style={{ width: "7px", height: "7px", borderRadius: "50%", background: "var(--success)", display: "inline-block" }} />
-              <span style={{ color: "var(--success)", fontSize: "0.75rem", fontWeight: 500 }}>Online</span>
+              <span style={{ width: "7px", height: "7px", borderRadius: "50%", background: isOnline ? "var(--success)" : isOnline === false ? "#ef4444" : "#888", display: "inline-block", transition: "background 0.3s" }} />
+              <span style={{ color: isOnline ? "var(--success)" : isOnline === false ? "#ef4444" : "#888", fontSize: "0.75rem", fontWeight: 500 }}>
+                {isOnline ? "Online" : isOnline === false ? "Offline" : "Connecting..."}
+              </span>
             </div>
           </div>
         </div>
@@ -183,12 +247,30 @@ export default function ChatPage() {
                 </span>
               )}
               <div className={m.role === "user" ? "bubble-user" : "bubble-ai"}>
-                {m.text.split("\n").map((line, i) => (
-                  <span key={i}>
-                    {line}
-                    {i < m.text.split("\n").length - 1 && <br />}
-                  </span>
-                ))}
+                {(() => {
+                  const urlRegex = /(https?:\/\/[^\s]+)/g;
+                  return m.text.split("\n").map((line, i) => (
+                    <span key={i}>
+                      {line.split(urlRegex).map((part, j) => {
+                        if (part.match(urlRegex)) {
+                          return (
+                            <a 
+                              key={j} 
+                              href={part} 
+                              target="_blank" 
+                              rel="noopener noreferrer" 
+                              style={{ color: "var(--primary)", textDecoration: "underline", wordBreak: "break-all" }}
+                            >
+                              {part}
+                            </a>
+                          );
+                        }
+                        return part;
+                      })}
+                      {i < m.text.split("\n").length - 1 && <br />}
+                    </span>
+                  ));
+                })()}
               </div>
               <span style={{ fontSize: "0.7rem", color: "var(--muted)", marginLeft: m.role === "ai" ? "0.5rem" : 0, marginRight: m.role === "user" ? "0.5rem" : 0 }}>
                 {m.ts}
@@ -281,5 +363,13 @@ export default function ChatPage() {
         </form>
       </div>
     </div>
+  );
+}
+
+export default function ChatPage() {
+  return (
+    <Suspense fallback={<div className="ai-loader" />}>
+      <ChatContent />
+    </Suspense>
   );
 }

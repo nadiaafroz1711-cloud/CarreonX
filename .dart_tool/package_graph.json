@@ -1,10 +1,10 @@
 {
   "roots": [
-    "careerai_project"
+    "carreonx_project"
   ],
   "packages": [
     {
-      "name": "careerai_project",
+      "name": "carreonx_project",
       "version": "1.0.0+1",
       "dependencies": [
         "cupertino_icons",

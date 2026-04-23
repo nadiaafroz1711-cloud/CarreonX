@@ -36,7 +36,9 @@ from backend.routes import (
     Mocktest,
     projects,
     tracker,
-    youtube
+    youtube,
+    sandbox,
+    jobs
 )
 
 # 4. Initialize FastAPI app
@@ -83,4 +85,6 @@ app.include_router(learning.router)
 app.include_router(Mocktest.router)
 app.include_router(projects.router)
 app.include_router(tracker.router)
-app.include_router(youtube.router)
+app.include_router(youtube.router)
+app.include_router(sandbox.router)
+app.include_router(jobs.router)

@@ -1,7 +1,15 @@
 import 'package:flutter/material.dart';
 
-class ExamScreen extends StatelessWidget {
+class ExamScreen extends StatefulWidget {
   const ExamScreen({super.key});
+
+  @override
+  State<ExamScreen> createState() => _ExamScreenState();
+}
+
+class _ExamScreenState extends State<ExamScreen> {
+  String? _selectedAnswer1;
+  String? _selectedAnswer2;
 
   @override
   Widget build(BuildContext context) {
@@ -14,26 +22,38 @@ class ExamScreen extends StatelessWidget {
         children: [
           const LinearProgressIndicator(value: 0.3),
           const SizedBox(height: 20),
-          _quizItem("1. What does AI stand for?",
-              ["Artistic Intel", "Artificial Intelligence", "Auto Info"]),
           _quizItem(
-              "2. Which is a Flutter language?", ["Java", "Swift", "Dart"]),
+              "1. What does AI stand for?",
+              ["Artistic Intel", "Artificial Intelligence", "Auto Info"],
+              _selectedAnswer1,
+              (value) => setState(() => _selectedAnswer1 = value)),
+          _quizItem(
+              "2. Which is a Flutter language?",
+              ["Java", "Swift", "Dart"],
+              _selectedAnswer2,
+              (value) => setState(() => _selectedAnswer2 = value)),
         ],
       ),
     );
   }
 
-  Widget _quizItem(String question, List<String> options) {
+  Widget _quizItem(String question, List<String> options, String? groupValue,
+      ValueChanged<String?> onChanged) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(question, style: const TextStyle(fontWeight: FontWeight.bold)),
-        ...options.map((o) => RadioListTile(
-            value: o,
-            groupValue: "",
-            title: Text(o, style: const TextStyle(fontSize: 14)),
-            // ignore: deprecated_member_use
-            onChanged: (v) {})),
+        RadioGroup<String>(
+          groupValue: groupValue,
+          onChanged: onChanged,
+          child: Column(
+            children: options
+                .map((o) => RadioListTile<String>(
+                    value: o,
+                    title: Text(o, style: const TextStyle(fontSize: 14))))
+                .toList(),
+          ),
+        ),
         const Divider(),
       ],
     );

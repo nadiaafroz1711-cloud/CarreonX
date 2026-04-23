@@ -9,6 +9,10 @@ interface Question {
   answer: string;
 }
 
+type GenerateMockTestResponse = {
+  questions?: Question[];
+};
+
 export default function MockTestPage() {
   const [subject, setSubject]       = useState("AI Architecture");
   const [questions, setQuestions]   = useState<Question[]>([]);
@@ -45,12 +49,12 @@ export default function MockTestPage() {
     setScore(null);
     try {
       const res  = await fetch(`${API_BASE_URL}/mocktest/generate?subject=${encodeURIComponent(subject)}`);
-      const data = await res.json();
+      const data: GenerateMockTestResponse = await res.json();
       if (!data.questions?.length) throw new Error("No questions returned.");
       setQuestions(data.questions);
       setStarted(true);
-    } catch (err: any) {
-      setError(err.message || "Could not load test. Make sure the backend is running.");
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : "Could not load test. Make sure the backend is running.");
     } finally {
       setLoading(false);
     }

@@ -4,17 +4,27 @@ import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { API_BASE_URL } from "@/lib/config";
 
+type LearningResource = {
+  skill: string;
+  queries: string[];
+  channels?: string[];
+};
+
+type YouTubeResponse = {
+  recommendations?: LearningResource[];
+};
+
 function LearningContent() {
   const searchParams = useSearchParams();
   const skills = searchParams.get("skills") || "React, FastAPI, Python";
-  const [resources, setResources] = useState<any[]>([]);
+  const [resources, setResources] = useState<LearningResource[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     async function fetchResources() {
       try {
         const res = await fetch(`${API_BASE_URL}/youtube/recommend?skills=${encodeURIComponent(skills)}`);
-        const data = await res.json();
+        const data: YouTubeResponse = await res.json();
         setResources(data.recommendations || []);
       } catch (err) {
         console.error(err);
@@ -40,7 +50,7 @@ function LearningContent() {
         </header>
 
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '2rem' }}>
-          {resources.map((res: any, idx: number) => (
+          {resources.map((res, idx: number) => (
             <div key={idx} className="glass-panel" style={{ padding: '2rem', borderTop: '4px solid var(--secondary)' }}>
               <h3 style={{ color: 'white', marginBottom: '1rem' }}>{res.skill}</h3>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
@@ -86,4 +96,3 @@ export default function LearningPage() {
     </Suspense>
   );
 }
-

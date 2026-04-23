@@ -1,18 +1,10 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
-from backend.database.connection import SessionLocal # ✅ Specific path
-from backend.models.profile import Profile  # CORRECT
-from backend import schemas
+from backend.database.connection import get_db
+from backend.models.profile import Profile
+from backend.schemas import profile_schema as schemas
 
 router = APIRouter(prefix="/profile", tags=["Profile"])
-
-# Database Dependency
-def get_db():
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
 
 @router.get("/{user_id}", response_model=schemas.ProfileResponse)
 def get_profile(user_id: int, db: Session = Depends(get_db)):

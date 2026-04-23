@@ -1,7 +1,6 @@
-import 'package:careerai_project/api_service.dart';
 import 'package:flutter/material.dart';
 // CRITICAL: This line tells Flutter where to find the ApiService
-import 'package:careerai_project/services/api_service.dart';
+import 'services/api_service.dart';
 
 class RoadmapScreen extends StatelessWidget {
   const RoadmapScreen({super.key});
@@ -47,5 +46,3 @@ class RoadmapScreen extends StatelessWidget {
     );
   }
 }
-
-

@@ -70,7 +70,7 @@ class SignupScreen extends StatelessWidget {
                   ),
                 ),
                 onPressed: () {
-                  Navigator.pushNamed(context, '/studentProfile');
+                  Navigator.pushNamed(context, '/skills');
                 },
                 child: const Text("Sign Up"),
               ),

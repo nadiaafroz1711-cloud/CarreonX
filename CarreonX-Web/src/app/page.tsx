@@ -1,264 +1,86 @@
 "use client";
 import Link from "next/link";
-import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
 
-const FEATURES = [
-  {
-    icon: "🗺️",
-    title: "AI Career Roadmap",
-    desc: "Get a step-by-step, personalised roadmap built by AI for your exact career goal.",
-    href: "/roadmap",
-    color: "var(--primary)",
-  },
-  {
-    icon: "🤖",
-    title: "AI Mentor Chat",
-    desc: "Ask anything — your AI mentor is available 24/7 for career, skills, and interview advice.",
-    href: "/chat",
-    color: "var(--secondary)",
-  },
-  {
-    icon: "📊",
-    title: "Learning Analytics",
-    desc: "Track your skills mastered, test scores, and overall progress in one place.",
-    href: "/progress",
-    color: "var(--success)",
-  },
-  {
-    icon: "🧪",
-    title: "Mock Tests",
-    desc: "Validate your knowledge with AI-generated quizzes tailored to your career path.",
-    href: "/mocktest",
-    color: "var(--warning)",
-  },
-];
+export default function LandingPage() {
+  return (
+    <div className="page-wrapper" style={{ minHeight: "100vh", padding: 0 }}>
+      {/* NAVBAR */}
+      <nav style={{ 
+        position: "fixed", top: 0, width: "100%", zIndex: 100, 
+        background: "rgba(10, 10, 10, 0.8)", backdropFilter: "blur(20px)",
+        borderBottom: "1px solid rgba(255,255,255,0.05)", padding: "1rem 2rem"
+      }}>
+        <div className="container" style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+          <div style={{ fontSize: "1.5rem", fontWeight: 900, letterSpacing: "-1px" }}>
+            CARREON<span style={{ color: "var(--primary)" }}>X</span>
+          </div>
+          <div style={{ display: "flex", gap: "2rem", alignItems: "center" }}>
+            <Link href="/login" className="btn-ghost" style={{ fontSize: "0.9rem" }}>Login</Link>
+            <Link href="/signup" className="btn-primary" style={{ padding: "0.6rem 1.5rem", fontSize: "0.9rem" }}>Get Started</Link>
+          </div>
+        </div>
+      </nav>
 
-export default function HomePage() {
-  const [user, setUser]     = useState<any>(null);
-  const [career, setCareer] = useState("");
-  const [skills, setSkills] = useState("");
-  const [loading, setLoading] = useState(false);
-  const router = useRouter();
-
-  useEffect(() => {
-    const saved = localStorage.getItem("user");
-    if (saved) setUser(JSON.parse(saved));
-  }, []);
-
-  const handleRecommend = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!career || !skills) return;
-    setLoading(true);
-    router.push(
-      `/roadmap?career=${encodeURIComponent(career)}&skills=${encodeURIComponent(skills)}`
-    );
-  };
-
-  /* ── LOGGED-IN DASHBOARD ─────────────────────────────────────────────── */
-  if (user) {
-    return (
-      <div className="page-wrapper">
-        <div className="container" style={{ maxWidth: "1100px" }}>
-
-          {/* Hero greeting */}
-          <header className="fade-up" style={{ marginBottom: "3rem", textAlign: "center" }}>
-            <div className="badge badge-primary" style={{ marginBottom: "1.25rem" }}>
-              ✦ AI-Powered Career Intelligence
-            </div>
-            <h1 style={{ fontSize: "clamp(2.5rem, 5vw, 4rem)", fontWeight: 800, marginBottom: "1rem" }}>
-              Welcome back,{" "}
-              <span className="gradient-text">{user.username}</span> 👋
-            </h1>
-            <p style={{ color: "var(--muted)", fontSize: "1.15rem", maxWidth: "600px", margin: "0 auto" }}>
-              Your AI career mentor is ready. Continue your personalised learning journey or ask anything.
-            </p>
-          </header>
-
-          {/* Quick action buttons */}
-          <div
-            className="fade-up delay-1"
-            style={{
-              display: "flex",
-              gap: "1rem",
-              justifyContent: "center",
-              flexWrap: "wrap",
-              marginBottom: "3.5rem",
-            }}
-          >
-            <Link href="/roadmap" className="btn-primary" style={{ padding: "0.9rem 2rem" }}>
-              🗺️ View My Roadmap
+      {/* HERO SECTION */}
+      <section style={{ 
+        padding: "10rem 2rem 6rem", textAlign: "center", 
+        background: "radial-gradient(circle at 50% 50%, rgba(0, 240, 255, 0.05) 0%, transparent 50%)"
+      }}>
+        <div className="container" style={{ maxWidth: "900px" }}>
+          <div className="badge badge-primary fade-up" style={{ marginBottom: "1.5rem" }}>AI-Powered Career Guidance</div>
+          <h1 className="gradient-text fade-up delay-1" style={{ fontSize: "clamp(3rem, 8vw, 5rem)", fontWeight: 900, lineHeight: 1.1, marginBottom: "1.5rem" }}>
+            Architect Your Future <br/> With Precision AI.
+          </h1>
+          <p className="fade-up delay-2" style={{ color: "var(--muted)", fontSize: "1.25rem", maxWidth: "600px", margin: "0 auto 2.5rem", lineHeight: 1.6 }}>
+            The ultimate ecosystem for modern professionals. Personalized roadmaps, real-time code execution, and AI mentorship — all in one place.
+          </p>
+          <div className="fade-up delay-3" style={{ display: "flex", gap: "1rem", justifyContent: "center" }}>
+            <Link href="/signup" className="btn-primary" style={{ padding: "1.2rem 3rem", fontSize: "1.1rem" }}>
+              Start Your Journey
             </Link>
-            <Link href="/chat" className="btn-ghost" style={{ padding: "0.9rem 2rem" }}>
-              🤖 Talk to AI Mentor
-            </Link>
-            <Link href="/mocktest" className="btn-ghost" style={{ padding: "0.9rem 2rem" }}>
-              🧪 Take Mock Test
+            <Link href="/project-status" className="btn-ghost" style={{ padding: "1.2rem 2rem", fontSize: "1.1rem" }}>
+              View Project Status
             </Link>
           </div>
+        </div>
+      </section>
 
-          {/* Feature cards */}
-          <div
-            className="fade-up delay-2"
-            style={{
-              display: "grid",
-              gridTemplateColumns: "repeat(auto-fill, minmax(240px, 1fr))",
-              gap: "1.25rem",
-            }}
-          >
-            {FEATURES.map((f, i) => (
-              <Link
-                key={f.title}
-                href={f.href}
-                style={{ textDecoration: "none" }}
-                className={`glass-card delay-${i + 1}`}
-              >
-                <div style={{ padding: "1.75rem" }}>
-                  <div
-                    style={{
-                      fontSize: "2rem",
-                      marginBottom: "1rem",
-                      width: "52px",
-                      height: "52px",
-                      borderRadius: "12px",
-                      background: `${f.color}18`,
-                      border: `1px solid ${f.color}30`,
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                    }}
-                  >
-                    {f.icon}
-                  </div>
-                  <h3 style={{ color: f.color, marginBottom: "0.6rem", fontSize: "1.05rem" }}>
-                    {f.title}
-                  </h3>
-                  <p style={{ color: "var(--muted)", fontSize: "0.875rem", lineHeight: 1.6 }}>
-                    {f.desc}
-                  </p>
-                </div>
-              </Link>
+      {/* FEATURES GRID */}
+      <section style={{ padding: "6rem 2rem" }}>
+        <div className="container">
+          <div style={{ textAlign: "center", marginBottom: "4rem" }}>
+            <h2 style={{ fontSize: "2.5rem", fontWeight: 800, marginBottom: "1rem" }}>Everything you need to scale.</h2>
+            <p style={{ color: "var(--muted)" }}>A complete suite of tools designed for the next generation of talent.</p>
+          </div>
+
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))", gap: "2rem" }}>
+            {[
+              { title: "AI Roadmaps", desc: "12-phase granular learning paths tailored to your specific career goals and skill level.", icon: "🗺️", color: "var(--primary)" },
+              { title: "Code Sandbox", desc: "Execute real Python code directly in your browser with our integrated terminal environment.", icon: "💻", color: "var(--success)" },
+              { title: "AI Mentor", desc: "A constant companion powered by Gemini AI to answer your questions and guide your study sessions.", icon: "🤖", color: "var(--secondary)" },
+              { title: "Mock Tests", desc: "AI-generated quizzes to validate your skills and track your progress through each phase.", icon: "🧪", color: "var(--warning)" },
+              { title: "Student Notebook", desc: "A markdown-supported workspace to document your findings and keep your learning organized.", icon: "📝", color: "#a855f7" },
+              { title: "Skill Analytics", desc: "Visual progress tracking and skill-gap analysis to keep you focused on what matters.", icon: "📊", color: "#f43f5e" },
+            ].map((feature, i) => (
+              <div key={i} className="glass-panel fade-up" style={{ padding: "2.5rem", borderTop: `4px solid ${feature.color}` }}>
+                <div style={{ fontSize: "2.5rem", marginBottom: "1.5rem" }}>{feature.icon}</div>
+                <h3 style={{ fontSize: "1.5rem", fontWeight: 700, marginBottom: "0.75rem", color: "white" }}>{feature.title}</h3>
+                <p style={{ color: "var(--muted)", lineHeight: 1.6 }}>{feature.desc}</p>
+              </div>
             ))}
           </div>
         </div>
-      </div>
-    );
-  }
+      </section>
 
-  /* ── GUEST LANDING PAGE ──────────────────────────────────────────────── */
-  return (
-    <div
-      style={{
-        minHeight: "calc(100vh - 64px)",
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "center",
-        justifyContent: "center",
-        padding: "4rem 1.5rem",
-        textAlign: "center",
-      }}
-    >
-      {/* Decorative blobs */}
-      <div
-        style={{
-          position: "fixed", width: "500px", height: "500px",
-          background: "radial-gradient(circle, var(--primary) 0%, transparent 70%)",
-          opacity: 0.07, top: "-100px", left: "-100px", zIndex: 0, pointerEvents: "none",
-        }}
-      />
-      <div
-        style={{
-          position: "fixed", width: "500px", height: "500px",
-          background: "radial-gradient(circle, var(--secondary) 0%, transparent 70%)",
-          opacity: 0.07, bottom: "-100px", right: "-100px", zIndex: 0, pointerEvents: "none",
-        }}
-      />
-
-      <div style={{ position: "relative", zIndex: 1, maxWidth: "800px", width: "100%" }}>
-        <div className="badge badge-secondary fade-up" style={{ marginBottom: "1.5rem" }}>
-          🚀 AI-Powered Career Intelligence Platform
+      {/* FOOTER */}
+      <footer style={{ padding: "4rem 2rem", borderTop: "1px solid rgba(255,255,255,0.05)", textAlign: "center" }}>
+        <div className="container">
+          <div style={{ fontSize: "1.25rem", fontWeight: 900, marginBottom: "1rem" }}>
+            CARREON<span style={{ color: "var(--primary)" }}>X</span>
+          </div>
+          <p style={{ color: "var(--muted)", fontSize: "0.85rem" }}>© 2026 CarreonX AI. All rights reserved.</p>
         </div>
-
-        <h1
-          className="fade-up delay-1"
-          style={{ fontSize: "clamp(3rem, 6vw, 5.5rem)", fontWeight: 900, lineHeight: 1.05, marginBottom: "1.5rem" }}
-        >
-          Propel Your Career{" "}
-          <span className="gradient-text">Into the Future</span>
-        </h1>
-
-        <p
-          className="fade-up delay-2"
-          style={{ fontSize: "1.2rem", color: "var(--muted)", maxWidth: "600px", margin: "0 auto 2.5rem", lineHeight: 1.7 }}
-        >
-          CarreonX maps your unique path to professional mastery with AI-generated roadmaps,
-          personalised recommendations and a 24/7 AI mentor.
-        </p>
-
-        {/* Quick-start form */}
-        <div className="glass-panel fade-up delay-3" style={{ padding: "2.5rem", maxWidth: "620px", margin: "0 auto" }}>
-          <h2 style={{ fontSize: "1.3rem", marginBottom: "1.5rem", color: "white" }}>
-            Try it — Build Your AI Roadmap Instantly
-          </h2>
-          <form onSubmit={handleRecommend} style={{ display: "grid", gap: "1rem" }}>
-            <div>
-              <label className="form-label" style={{ textAlign: "left" }}>Target Career</label>
-              <input
-                type="text"
-                className="input-field"
-                placeholder="e.g. AI Engineer, Data Scientist, Full Stack Dev"
-                value={career}
-                onChange={(e) => setCareer(e.target.value)}
-                required
-              />
-            </div>
-            <div>
-              <label className="form-label" style={{ textAlign: "left" }}>Current Skills</label>
-              <input
-                type="text"
-                className="input-field"
-                placeholder="e.g. Python, React, SQL"
-                value={skills}
-                onChange={(e) => setSkills(e.target.value)}
-                required
-              />
-            </div>
-            <button type="submit" className="btn-primary" disabled={loading} style={{ padding: "0.9rem" }}>
-              {loading ? (
-                <span style={{ display: "flex", alignItems: "center", gap: "0.5rem", justifyContent: "center" }}>
-                  <span className="spinner" style={{ width: "18px", height: "18px" }} />
-                  Building Roadmap...
-                </span>
-              ) : (
-                "✦ Build My AI Roadmap"
-              )}
-            </button>
-          </form>
-          <div className="divider" />
-          <p style={{ color: "var(--muted)", fontSize: "0.875rem" }}>
-            Already have an account?{" "}
-            <Link href="/login" style={{ color: "var(--primary)", fontWeight: 600, textDecoration: "none" }}>
-              Sign in for a personalised experience →
-            </Link>
-          </p>
-        </div>
-
-        {/* Feature teaser strip */}
-        <div
-          className="fade-up delay-4"
-          style={{
-            display: "flex",
-            gap: "0.5rem",
-            justifyContent: "center",
-            flexWrap: "wrap",
-            marginTop: "2.5rem",
-          }}
-        >
-          {["🗺️ Personalised Roadmaps", "🤖 AI Mentor Chat", "🧪 Mock Tests", "📊 Progress Tracking"].map((f) => (
-            <span key={f} className="badge badge-primary">{f}</span>
-          ))}
-        </div>
-      </div>
+      </footer>
     </div>
   );
 }
