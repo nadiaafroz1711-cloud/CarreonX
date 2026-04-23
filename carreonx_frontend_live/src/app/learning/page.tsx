@@ -2,7 +2,7 @@
 import { useState, useEffect, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
-import { API_BASE_URL } from "@/lib/config";
+import { API_BASE_URL } from "../../lib/config";
 
 type LearningResource = {
   skill: string;

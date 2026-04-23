@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { API_BASE_URL } from "@/lib/config";
+import { API_BASE_URL } from "../../lib/config";
 
 type User = {
   id: number;

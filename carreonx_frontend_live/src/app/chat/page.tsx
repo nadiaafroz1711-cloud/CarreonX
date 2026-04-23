@@ -2,7 +2,7 @@
 import { useState, useEffect, useRef, Suspense } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { API_BASE_URL } from "@/lib/config";
+import { API_BASE_URL } from "../../lib/config";
 
 interface Message {
   id: number;
