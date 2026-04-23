@@ -20,8 +20,8 @@ if not exist "%CD%\backend\main.py" (
   exit /b 1
 )
 
-if not exist "%CD%\carreonx_frontend_live\package.json" (
-  echo Frontend entrypoint not found at carreonx_frontend_live\package.json
+if not exist "%CD%\CarreonX-Web\package.json" (
+  echo Frontend entrypoint not found at CarreonX-Web\package.json
   pause
   exit /b 1
 )
@@ -41,16 +41,16 @@ if defined BACKEND_ACTIVATE (
 )
 
 echo [3/4] Preparing Next.js frontend on http://localhost:3000 ...
-if not exist "%CD%\carreonx_frontend_live\node_modules" (
+if not exist "%CD%\CarreonX-Web\node_modules" (
   echo Frontend dependencies missing. Installing once before startup...
-  cd /d "%CD%\carreonx_frontend_live"
+  cd /d "%CD%\CarreonX-Web"
   call npm install
   cd /d "%~dp0"
 )
-start "CarreonX Frontend" /MIN cmd /k "cd /d \"%CD%\carreonx_frontend_live\" && npm run dev"
+start "CarreonX Frontend" /MIN cmd /k "cd /d \"%CD%\CarreonX-Web\" && npm run dev"
 
 echo [4/4] Waiting for services to initialize...
-ping 127.0.0.1 -n 9 > nul
+timeout /t 8 /nobreak > nul
 
 echo Opening CarreonX in your browser...
 start http://localhost:3000
@@ -60,5 +60,5 @@ echo CarreonX should now be running.
 echo Backend:  http://localhost:8000/docs
 echo Frontend: http://localhost:3000
 echo.
-ping 127.0.0.1 -n 4 > nul
+timeout /t 3 /nobreak > nul
 exit /b 0

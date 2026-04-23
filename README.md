@@ -51,6 +51,12 @@ npm run dev
 
 ---
 
+## 🌍 Deployment
+- **Frontend**: Hosted on [Vercel](https://vercel.com).
+- **Backend & Database**: Hosted on [Render](https://render.com) using the included `render.yaml`.
+
+---
+
 ## 📁 Project Structure
 - `backend/`: FastAPI server, database logic, and AI services.
 - `careerai-web/`: Next.js frontend, UI components, and state management.
